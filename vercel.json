@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/processCV.js": {
+      "runtime": "@vercel/node@4.1.0"
+    }
+  }
+}
