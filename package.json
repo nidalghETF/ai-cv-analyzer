@@ -1,0 +1,16 @@
+{
+  "name": "ai-cv-analyzer",
+  "version": "1.0.0",
+  "description": "An app to analyze CVs using AI.",
+  "main": "index.html",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Build step if needed'"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.17.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
