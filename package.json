@@ -5,7 +5,7 @@
   "main": "index.html",
   "scripts": {
     "dev": "vercel dev",
-    "build": "echo 'Build step if needed'"
+    "build": "npm run build --prefix api || exit 0" // Optional: placeholder if Vercel expects a build script for Node projects
   },
   "dependencies": {
     "@google/generative-ai": "^0.17.0"
