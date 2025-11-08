@@ -130,12 +130,10 @@
         (function() {
             'use strict';
 
-            // --- Configuration ---
+                        // --- Configuration ---
             const CONFIG = {
-                // Use environment-aware API endpoint detection
-                BACKEND_API_ENDPOINT: (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-                    ? 'http://localhost:3000/api/processCV' // Local development endpoint
-                    : 'https://ai-cv-analyzer-5j5vce4q9-n-gs-projects-4f84893c.vercel.app/api/processCV', // Production endpoint
+                // Use relative path for same-origin requests (recommended for Vercel)
+                BACKEND_API_ENDPOINT: '/api/processCV', // Changed from full URL
                 
                 // Browser-side constants
                 MAX_FILE_SIZE_MB: 5,
