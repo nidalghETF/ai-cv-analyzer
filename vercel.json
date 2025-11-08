@@ -1,7 +1,9 @@
 {
-  "functions": {
-    "api/processCV.js": {
-      "runtime": "@vercel/node@4.1.0"
-    }
-  }
+  "version": 2,
+  "builds": [
+    { "src": "api/processCV.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/api/processCV", "dest": "/api/processCV.js" }
+  ]
 }
