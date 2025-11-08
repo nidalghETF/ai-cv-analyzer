@@ -209,6 +209,21 @@ export default async function handler(request, response) {
       userMessage = "AI service returned invalid data format.";
     } else if (error.message.includes('API key') || error.message.includes('configuration')) {
       userMessage = "Service configuration error. Please contact administrator.";
+      } catch (error) {
+    console.error('[CV Process] Error:', {
+      message: error.message,
+      type: error.constructor.name,
+      timestamp: new Date().toISOString()
+    });
+
+    let userMessage = "Unable to process CV. An unexpected error occurred.";
+    
+    if (error.message === 'AI_REQUEST_TIMEOUT') {
+      userMessage = `Request timed out after ${CONFIG.TIMEOUT_MS}ms. Try a smaller PDF.`;
+    } else if (error.message.includes('AI response')) {
+      userMessage = "AI service returned invalid data format.";
+    } else if (error.message.includes('API key') || error.message.includes('configuration')) {
+      userMessage = "Service configuration error. Please contact administrator.";
     }
 
     return response.status(error.message === 'AI_REQUEST_TIMEOUT' ? 504 : 500)
