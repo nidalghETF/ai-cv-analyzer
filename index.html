@@ -130,14 +130,14 @@
         (function() {
             'use strict';
 
-                   /// --- Configuration ---
-const CONFIG = {
-    BACKEND_API_ENDPOINT: 'https://ai-cv-analyzer-5j5vce4q9-n-gs-projects-4f84893c.vercel.app/api/processCV', // Use the full deployed URL
-    MAX_FILE_SIZE_MB: 5, // Use a fixed value for the frontend, corrected from parseInt(process.env...)
-    SUPPORTED_MIME_TYPES: ['application/pdf'], // This is a constant
-    STORAGE_VERSION: 'v1.0',
-    STORAGE_KEYS: { cv: 'cvData', job: 'jobData' } // No comma after the last item in an object
-};
+                   // --- Configuration ---
+            const CONFIG = {
+                BACKEND_API_ENDPOINT: 'https://ai-cv-analyzer-5j5vce4q9-n-gs-projects-4f84893c.vercel.app/api/processCV',
+                MAX_FILE_SIZE_MB: 5,
+                SUPPORTED_MIME_TYPES: ['application/pdf'],
+                STORAGE_VERSION: 'v1.0',
+                STORAGE_KEYS: { cv: 'cvData', job: 'jobData' }
+            };
         // --- Sanitization & Validation Utilities ---
         const SecurityUtils = {
           sanitizeForDOM: (str) => {
