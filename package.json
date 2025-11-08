@@ -1,12 +1,6 @@
 {
   "name": "ai-cv-analyzer",
   "version": "1.0.0",
-  "description": "An app to analyze CVs using AI.",
-  "main": "index.html",
-  "scripts": {
-    "dev": "vercel dev",
-    "build": "npm run build --prefix api || exit 0"
-  },
   "dependencies": {
     "@google/generative-ai": "^0.17.0"
   },
