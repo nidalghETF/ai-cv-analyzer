@@ -11,15 +11,8 @@ const CONFIG = {
   CORS_ENABLED: process.env.CORS_ENABLED !== 'false'
 };
 
-// --- Core Initialization ---
-const API_KEY = process.env[CONFIG.API_KEY_NAME];
-if (!API_KEY) {
-  console.error(`CRITICAL: Missing ${CONFIG.API_KEY_NAME} environment variable`);
-  // Do not throw here for Vercel functions, log and let handler return error
-}
-
-const genAI = new GoogleGenerativeAI(API_KEY);
-const model = genAI.getGenerativeModel({ model: CONFIG.MODEL_NAME });
+// --- Core Initialization (moved inside try block) ---
+let genAI, model;
 
 // --- Security & Validation Utilities ---
 const SecurityUtils = {
@@ -66,8 +59,8 @@ const CorsUtils = {
    */
   setHeaders: (response, requestOrigin) => {
     if (!CONFIG.CORS_ENABLED) return;
-    const isAllowed = CONFIG.ALLOWED_ORIGINS.length === 0 || 
-                     CONFIG.ALLOWED_ORIGINS.includes(requestOrigin) || 
+    const isAllowed = CONFIG.ALLOWED_ORIGINS.length === 0 ||
+                     CONFIG.ALLOWED_ORIGINS.includes(requestOrigin) ||
                      CONFIG.ALLOWED_ORIGINS.includes('*');
     if (isAllowed) {
       response.setHeader('Access-Control-Allow-Origin', requestOrigin || '*');
@@ -81,17 +74,13 @@ const CorsUtils = {
 // --- AI Prompt Template ---
 const SYSTEM_PROMPT = `
 You are a professional CV analysis system. Extract structured data from the provided CV PDF and return ONLY a JSON object with two keys: "cvData" and "jobData".
-
 **cvData**: Follow the CV template structure (Personal Info, Core Competencies, Certifications[], Languages[], Experience[], Education[], Additional Info). Use null or empty string for missing data.
-
 **jobData**: Generate a matching job posting template based on the candidate's profile. Include Job Identification, Company Info, Position Details, Candidate Requirements, Preferred Qualifications, Location & Logistics, Compensation & Benefits, and Application Process.
-
 CRITICAL RULES:
 1. Return ONLY valid JSON. No explanations, markdown, or code fences.
 2. Format dates as YYYY-MM-DD where possible.
 3. Keep all text concise and professional.
 4. Arrays must be returned as arrays, objects as objects.
-
 Example reference structure: {"cvData":{"personalInfo":{"fullName":"..."}},"jobData":{"jobIdentification":{"jobTitle":"..."}}}
 `.trim();
 
@@ -115,36 +104,45 @@ export default async function handler(request, response) {
 
   // Method validation
   if (request.method !== 'POST') {
-    return response.status(405).json({ 
-      message: 'Method not allowed', 
-      allowed: ['POST'] 
+    return response.status(405).json({
+      message: 'Method not allowed',
+      allowed: ['POST']
     });
   }
 
-  if (!API_KEY) {
-    return response.status(500).json({ message: 'Server configuration error: Missing API key.' });
+  // Input validation - Check request body exists
+  if (!request.body) {
+    return response.status(400).json({
+      message: 'Request body is missing'
+    });
   }
 
+  // Destructure pdfBase64 *after* checking request.body exists
   const { pdfBase64 } = request.body;
 
   // Input validation
   if (!pdfBase64) {
-    return response.status(400).json({ 
-      message: 'Missing required field: pdfBase64' 
+    return response.status(400).json({
+      message: 'Missing required field: pdfBase64'
     });
   }
 
   try {
+    // --- Move API Key check and initialization inside the try block ---
+    const API_KEY = process.env[CONFIG.API_KEY_NAME];
+    if (!API_KEY) {
+      throw new Error(`Missing ${CONFIG.API_KEY_NAME} environment variable`);
+    }
+
+    genAI = new GoogleGenerativeAI(API_KEY);
+    model = genAI.getGenerativeModel({ model: CONFIG.MODEL_NAME });
+    // --- End API Key check ---
+
     SecurityUtils.validateBase64(pdfBase64);
-  } catch (validationError) {
-    console.warn('[CV Process] Validation failed:', validationError.message);
-    return response.status(400).json({ message: validationError.message });
-  }
 
-  // Log sanitized request metadata
-  console.log(`[CV Process] Request received: ${Date.now()}`);
+    // Log sanitized request metadata
+    console.log(`[CV Process] Request received: ${Date.now()}`);
 
-  try {
     // Prepare content for AI
     const pdfDataPart = {
       inlineData: {
@@ -161,13 +159,13 @@ export default async function handler(request, response) {
           parts: [pdfDataPart, { text: SYSTEM_PROMPT }]
         }],
       }),
-      new Promise((_, reject) => 
+      new Promise((_, reject) =>
         setTimeout(() => reject(new Error('AI_REQUEST_TIMEOUT')), CONFIG.TIMEOUT_MS)
       )
     ]);
 
     const responseText = aiResult.response.text();
-    
+
     // Debug logging (only in development)
     if (process.env.NODE_ENV === 'development') {
       console.log(`[CV Process] AI response length: ${responseText.length} chars`);
