@@ -3,8 +3,8 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // --- Configuration ---
 const CONFIG = {
-  API_KEY_NAME: "GOOGLE_AI_API_KEY",
-  MODEL_NAME: process.env.GEMINI_MODEL || "gemini-1.5-flash",
+  API_KEY_NAME: "GOOGLE_AI_API_KEY", // This name is fine for explicit access via process.env
+  MODEL_NAME: process.env.GEMINI_MODEL || "gemini-1.5-flash-latest", // Changed model name
   MAX_PDF_SIZE_MB: parseInt(process.env.MAX_PDF_SIZE_MB) || 5,
   TIMEOUT_MS: parseInt(process.env.AI_TIMEOUT_MS) || 60000,
   ALLOWED_ORIGINS: (process.env.ALLOWED_ORIGINS || '').split(',').map(o => o.trim()).filter(o => o),
