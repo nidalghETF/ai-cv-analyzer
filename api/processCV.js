@@ -143,10 +143,10 @@ export default async function handler(request, response) {
     // Log sanitized request metadata
     console.log(`[CV Process] Request received: ${Date.now()}`);
 
-    // Prepare content for AI
+    // Prepare content for AI - CORRECTED inlineData structure
     const pdfDataPart = {
       inlineData: {
-         pdfBase64,
+        data: pdfBase64, // FIXED: Explicitly use 'data' field name
         mimeType: "application/pdf"
       }
     };
