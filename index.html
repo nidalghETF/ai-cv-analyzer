@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<link rel="icon" href="data:,">
+    <link rel="icon" href="data:,">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI CV Analyzer</title>
@@ -63,6 +63,7 @@
             cursor: not-allowed; 
         }
         .btn-danger { background: var(--error); }
+        .btn-secondary { background: #6b7280; }
         #statusMessage { 
             margin-top: 15px; 
             padding: 12px; 
@@ -73,23 +74,28 @@
         .success { background: #f0fdf4; color: var(--success); border: 1px solid #bbf7d0; }
         .action-buttons { margin-top: 20px; }
         h2 { border-bottom: 2px solid var(--primary); padding-bottom: 8px; }
-        h3 { color: #374151; }
+        h3 { color: #374151; margin-top: 20px; }
         .dynamic-item { 
             border-left: 3px solid var(--primary); 
-            padding-left: 10px; 
-            margin-bottom: 10px; 
+            padding: 15px;
+            margin-bottom: 15px; 
             position: relative;
+            background: #f8fafc;
+            border-radius: 4px;
         }
         .delete-btn { 
             position: absolute; 
-            top: 0; 
-            right: 0; 
+            top: 10px; 
+            right: 10px; 
             padding: 4px 8px; 
             font-size: 12px; 
         }
+        .dynamic-container { margin-bottom: 15px; }
+        .add-btn { margin: 10px 0; }
         @media (max-width: 768px) {
             label { flex: 0 0 100%; }
             input, textarea, select { flex: 0 0 100%; }
+            .dynamic-item { padding: 10px; }
         }
     </style>
 </head>
@@ -110,21 +116,185 @@
 
     <div id="cvTemplateSection" class="template-section" style="display: none;">
         <h2>CV Template (Editable)</h2>
-        <form id="cvTemplateForm"></form>
+        <form id="cvTemplateForm">
+            <h3>Personal Information</h3>
+            <div class="form-group">
+                <label for="personalInfo.fullName">Full Name:</label>
+                <input type="text" name="personalInfo.fullName" id="personalInfo.fullName">
+            </div>
+            <div class="form-group">
+                <label for="personalInfo.professionalTitle">Professional Title:</label>
+                <input type="text" name="personalInfo.professionalTitle" id="personalInfo.professionalTitle">
+            </div>
+            <div class="form-group">
+                <label for="personalInfo.phone">Phone:</label>
+                <input type="text" name="personalInfo.phone" id="personalInfo.phone">
+            </div>
+            <div class="form-group">
+                <label for="personalInfo.email">Email:</label>
+                <input type="email" name="personalInfo.email" id="personalInfo.email">
+            </div>
+            <div class="form-group">
+                <label for="personalInfo.location">Location:</label>
+                <input type="text" name="personalInfo.location" id="personalInfo.location">
+            </div>
+            <div class="form-group">
+                <label for="personalInfo.linkedIn">LinkedIn:</label>
+                <input type="text" name="personalInfo.linkedIn" id="personalInfo.linkedIn">
+            </div>
+            <div class="form-group">
+                <label for="personalInfo.portfolio">Portfolio:</label>
+                <input type="text" name="personalInfo.portfolio" id="personalInfo.portfolio">
+            </div>
+
+            <h3>Professional Summary</h3>
+            <div class="form-group">
+                <label for="professionalSummary">Summary:</label>
+                <textarea name="professionalSummary" id="professionalSummary" rows="4"></textarea>
+            </div>
+
+            <h3>Core Competencies</h3>
+            <div class="form-group">
+                <label for="coreCompetencies.technicalSkills">Technical Skills:</label>
+                <input type="text" name="coreCompetencies.technicalSkills" id="coreCompetencies.technicalSkills" placeholder="Comma-separated list">
+            </div>
+            <div class="form-group">
+                <label for="coreCompetencies.softSkills">Soft Skills:</label>
+                <input type="text" name="coreCompetencies.softSkills" id="coreCompetencies.softSkills" placeholder="Comma-separated list">
+            </div>
+
+            <h3>Certifications</h3>
+            <div id="certificationsContainer" class="dynamic-container"></div>
+            <button type="button" class="btn-secondary add-btn" onclick="addCertification()">+ Add Certification</button>
+
+            <h3>Languages</h3>
+            <div id="languagesContainer" class="dynamic-container"></div>
+            <button type="button" class="btn-secondary add-btn" onclick="addLanguage()">+ Add Language</button>
+
+            <h3>Professional Experience</h3>
+            <div id="experienceContainer" class="dynamic-container"></div>
+            <button type="button" class="btn-secondary add-btn" onclick="addExperience()">+ Add Experience</button>
+
+            <h3>Education</h3>
+            <div id="educationContainer" class="dynamic-container"></div>
+            <button type="button" class="btn-secondary add-btn" onclick="addEducation()">+ Add Education</button>
+
+            <h3>Additional Information</h3>
+            <div class="form-group">
+                <label for="additionalInfo.projects">Projects:</label>
+                <textarea name="additionalInfo.projects" id="additionalInfo.projects" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="additionalInfo.publications">Publications:</label>
+                <textarea name="additionalInfo.publications" id="additionalInfo.publications" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="additionalInfo.professionalMemberships">Professional Memberships:</label>
+                <textarea name="additionalInfo.professionalMemberships" id="additionalInfo.professionalMemberships" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="additionalInfo.volunteerExperience">Volunteer Experience:</label>
+                <textarea name="additionalInfo.volunteerExperience" id="additionalInfo.volunteerExperience" rows="3"></textarea>
+            </div>
+        </form>
         <div class="action-buttons">
             <button type="button" onclick="saveFormData('cv')">Save CV Data</button>
             <button type="button" class="btn-danger" onclick="resetForm('cv')">Clear CV</button>
+            <button type="button" onclick="exportProject()">Export Project as JSON</button>
         </div>
     </div>
 
     <div id="jobTemplateSection" class="template-section" style="display: none;">
         <h2>AI-Generated Job Questionnaire (Editable)</h2>
-        <form id="jobTemplateForm"></form>
+        <form id="jobTemplateForm">
+            <h3>Job Identification</h3>
+            <div class="form-group">
+                <label for="jobIdentification.jobTitle">Job Title:</label>
+                <input type="text" name="jobIdentification.jobTitle" id="jobIdentification.jobTitle">
+            </div>
+            <div class="form-group">
+                <label for="jobIdentification.referenceID">Reference ID:</label>
+                <input type="text" name="jobIdentification.referenceID" id="jobIdentification.referenceID">
+            </div>
+            <div class="form-group">
+                <label for="jobIdentification.department">Department:</label>
+                <input type="text" name="jobIdentification.department" id="jobIdentification.department">
+            </div>
+            <div class="form-group">
+                <label for="jobIdentification.positionType">Position Type:</label>
+                <select name="jobIdentification.positionType" id="jobIdentification.positionType">
+                    <option value="">Select Type</option>
+                    <option value="Full-time">Full-time</option>
+                    <option value="Part-time">Part-time</option>
+                    <option value="Contract">Contract</option>
+                    <option value="Remote">Remote</option>
+                </select>
+            </div>
+
+            <h3>Company Information</h3>
+            <div class="form-group">
+                <label for="companyInformation.companyName">Company Name:</label>
+                <input type="text" name="companyInformation.companyName" id="companyInformation.companyName">
+            </div>
+            <div class="form-group">
+                <label for="companyInformation.companySize">Company Size:</label>
+                <input type="text" name="companyInformation.companySize" id="companyInformation.companySize">
+            </div>
+            <div class="form-group">
+                <label for="companyInformation.industrySector">Industry Sector:</label>
+                <input type="text" name="companyInformation.industrySector" id="companyInformation.industrySector">
+            </div>
+
+            <h3>Position Details</h3>
+            <div class="form-group">
+                <label for="positionDetails.jobDescription">Job Description:</label>
+                <textarea name="positionDetails.jobDescription" id="positionDetails.jobDescription" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="positionDetails.keyResponsibilities">Key Responsibilities:</label>
+                <textarea name="positionDetails.keyResponsibilities" id="positionDetails.keyResponsibilities" rows="4"></textarea>
+            </div>
+
+            <h3>Candidate Requirements</h3>
+            <div class="form-group">
+                <label for="candidateRequirements.requiredEducationLevel">Required Education:</label>
+                <input type="text" name="candidateRequirements.requiredEducationLevel" id="candidateRequirements.requiredEducationLevel">
+            </div>
+            <div class="form-group">
+                <label for="candidateRequirements.requiredFieldOfStudy">Field of Study:</label>
+                <input type="text" name="candidateRequirements.requiredFieldOfStudy" id="candidateRequirements.requiredFieldOfStudy">
+            </div>
+            <div class="form-group">
+                <label for="candidateRequirements.requiredYearsOfExperience">Years of Experience:</label>
+                <input type="number" name="candidateRequirements.requiredYearsOfExperience" id="candidateRequirements.requiredYearsOfExperience">
+            </div>
+            <div class="form-group">
+                <label for="candidateRequirements.requiredSkills">Required Skills:</label>
+                <textarea name="candidateRequirements.requiredSkills" id="candidateRequirements.requiredSkills" rows="3"></textarea>
+            </div>
+
+            <h3>Compensation & Benefits</h3>
+            <div class="form-group">
+                <label for="compensationBenefits.salaryRange">Salary Range:</label>
+                <input type="text" name="compensationBenefits.salaryRange" id="compensationBenefits.salaryRange">
+            </div>
+            <div class="form-group">
+                <label for="compensationBenefits.bonusStructure">Bonus Structure:</label>
+                <input type="text" name="compensationBenefits.bonusStructure" id="compensationBenefits.bonusStructure">
+            </div>
+            <div class="form-group">
+                <label for="compensationBenefits.healthInsurance">Health Insurance:</label>
+                <input type="text" name="compensationBenefits.healthInsurance" id="compensationBenefits.healthInsurance">
+            </div>
+        </form>
         <div class="action-buttons">
             <button type="button" onclick="saveFormData('job')">Save Job Data</button>
             <button type="button" class="btn-danger" onclick="resetForm('job')">Clear Job</button>
+            <button type="button" onclick="importProject()">Import Project from JSON</button>
         </div>
     </div>
+
+    <input type="file" id="importFileInput" style="display: none;" accept=".json" />
 
     <script>
         // --- IIFE to prevent global scope pollution ---
@@ -133,8 +303,8 @@
 
             // --- Configuration ---
             const CONFIG = {
-                BACKEND_API_ENDPOINT: '/api/processCV', // Use relative path for same-origin request
-                MAX_FILE_SIZE_MB: 2, // 2MB limit as per requirements
+                BACKEND_API_ENDPOINT: '/api/processCV',
+                MAX_FILE_SIZE_MB: 2,
                 SUPPORTED_MIME_TYPES: ['application/pdf'],
                 STORAGE_VERSION: 'v1.0',
                 STORAGE_KEYS: { cv: 'cvData', job: 'jobData' }
@@ -145,17 +315,16 @@
                 sanitizeForDOM: (str) => {
                     if (typeof str !== 'string') return '';
                     const div = document.createElement('div');
-                    div.textContent = str; // This escapes HTML entities
+                    div.textContent = str;
                     return div.innerHTML;
                 },
                 sanitizeErrorMessage: (msg) => {
                     if (typeof msg !== 'string') return 'An unknown error occurred';
-                    // Remove potentially sensitive backend details
                     return msg.replace(/\(.*?\)|\[.*?\]/g, '').substring(0, 200);
                 },
                 validateFile: (file) => {
                     if (!file) throw new Error('No file selected');
-                    if (!CONFIG.SUPPORTED_MIME_TYPES.includes(file.type)) {
+                    if (!CONFIG.SUPORTED_MIME_TYPES.includes(file.type)) {
                         throw new Error(`Invalid file type. Only PDFs are supported.`);
                     }
                     const maxSize = CONFIG.MAX_FILE_SIZE_MB * 1024 * 1024;
@@ -172,9 +341,8 @@
                         const payload = {
                             version: CONFIG.STORAGE_VERSION,
                             timestamp: new Date().toISOString(),
-                             data
+                            data: data
                         };
-                        // Basic obfuscation (not encryption)
                         const obfuscated = btoa(JSON.stringify(payload));
                         localStorage.setItem(CONFIG.STORAGE_KEYS[key], obfuscated);
                         return true;
@@ -206,7 +374,12 @@
             // --- DOM & Form Utilities ---
             const FormUtils = {
                 clearDynamicContainer: (containerId) => {
-                    document.getElementById(containerId).innerHTML = '';
+                    const container = document.getElementById(containerId);
+                    if (!container) {
+                        console.error(`Container not found: ${containerId}`);
+                        return;
+                    }
+                    container.innerHTML = '';
                 },
                 createDeleteButton: (onclickHandler, type, index) => {
                     const btn = document.createElement('button');
@@ -214,11 +387,12 @@
                     btn.textContent = 'Delete';
                     btn.className = 'delete-btn btn-danger';
                     btn.onclick = onclickHandler;
-                    btn.setAttribute('aria-label', `Delete ${type} ${index + 1}`); // Accessibility
+                    btn.setAttribute('aria-label', `Delete ${type} ${index + 1}`);
                     return btn;
                 },
                 disableButton: (btnId, disabled) => {
-                    document.getElementById(btnId).disabled = disabled;
+                    const btn = document.getElementById(btnId);
+                    if (btn) btn.disabled = disabled;
                 }
             };
 
@@ -257,10 +431,14 @@
                 },
                 add: (containerId, type) => {
                     const container = document.getElementById(containerId);
+                    if (!container) {
+                        console.error(`Container not found: ${containerId}`);
+                        return;
+                    }
                     const existingItems = container.querySelectorAll(`[data-type="${type}"]`);
                     const index = existingItems.length;
                     container.insertAdjacentHTML('beforeend', DynamicFields.templates[type](index));
-                    const newItem = container.lastElementChild; // Get the newly added item
+                    const newItem = container.lastElementChild;
                     const deleteBtn = FormUtils.createDeleteButton(() => newItem.remove(), type, index);
                     newItem.appendChild(deleteBtn);
                 }
@@ -272,7 +450,7 @@
                     const form = document.getElementById(formId);
                     if (!data || !form) return;
 
-                    // Clear existing dynamic fields
+                    // Clear existing dynamic fields safely
                     ['certificationsContainer', 'languagesContainer', 'experienceContainer', 'educationContainer'].forEach(id => {
                         FormUtils.clearDynamicContainer(id);
                     });
@@ -290,7 +468,7 @@
                     for (let i = 0; i < arrayLengths.experience; i++) DynamicFields.add('experienceContainer', 'experience');
                     for (let i = 0; i < arrayLengths.education; i++) DynamicFields.add('educationContainer', 'education');
 
-                    // Set values for all fields after DOM is populated using setTimeout to ensure DOM is ready
+                    // Set values for all fields after DOM is populated
                     setTimeout(() => {
                         const flattened = FormSerializer.flattenObject(data);
                         Object.entries(flattened).forEach(([key, value]) => {
@@ -342,13 +520,11 @@
                     }
 
                     const finalKey = keys[keys.length - 1];
-                    // Ensure array index assignment works correctly
                     if (Array.isArray(current)) {
                         const index = parseInt(finalKey, 10);
                         if (!isNaN(index)) {
                             current[index] = value;
                         } else {
-                            // Handle non-numeric keys within an array item context (shouldn't happen with our naming)
                             current.push({ [finalKey]: value });
                         }
                     } else {
@@ -371,12 +547,84 @@
                     }
                 },
                 hideMessage: () => {
-                    document.getElementById('statusMessage').style.display = 'none';
+                    const statusDiv = document.getElementById('statusMessage');
+                    if (statusDiv) statusDiv.style.display = 'none';
                 },
                 setProcessingState: (isProcessing) => {
                     FormUtils.disableButton('processBtn', isProcessing);
                     const btn = document.getElementById('processBtn');
-                    btn.textContent = isProcessing ? 'Processing...' : 'Analyze CV with AI';
+                    if (btn) {
+                        btn.textContent = isProcessing ? 'Processing...' : 'Analyze CV with AI';
+                    }
+                }
+            };
+
+            // --- JSON Export/Import ---
+            const ProjectManager = {
+                exportProject: () => {
+                    try {
+                        const cvData = FormSerializer.serialize(document.getElementById('cvTemplateForm'));
+                        const jobData = FormSerializer.serialize(document.getElementById('jobTemplateForm'));
+                        
+                        const projectData = {
+                            cvData: cvData,
+                            jobData: jobData,
+                            metadata: {
+                                exportDate: new Date().toISOString(),
+                                version: CONFIG.STORAGE_VERSION,
+                                projectName: 'CV_Analyzer_Project'
+                            }
+                        };
+
+                        const dataStr = JSON.stringify(projectData, null, 2);
+                        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                        const url = URL.createObjectURL(dataBlob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = `CV_Project_${new Date().toISOString().split('T')[0]}.json`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
+
+                        UI.showMessage('Project exported successfully!');
+                    } catch (error) {
+                        console.error('Export error:', error);
+                        UI.showMessage('Failed to export project', true);
+                    }
+                },
+
+                importProject: () => {
+                    document.getElementById('importFileInput').click();
+                },
+
+                handleImportFile: (file) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const projectData = JSON.parse(e.target.result);
+                            
+                            // Validate structure
+                            if (!projectData.cvData || !projectData.jobData) {
+                                throw new Error('Invalid project file structure');
+                            }
+
+                            if (confirm('This will replace all current data. Continue?')) {
+                                FormSerializer.populate('cvTemplateForm', projectData.cvData);
+                                FormSerializer.populate('jobTemplateForm', projectData.jobData);
+                                
+                                document.getElementById('cvTemplateSection').style.display = 'block';
+                                document.getElementById('jobTemplateSection').style.display = 'block';
+                                document.getElementById('uploadSection').style.display = 'none';
+                                
+                                UI.showMessage('Project imported successfully!');
+                            }
+                        } catch (error) {
+                            console.error('Import error:', error);
+                            UI.showMessage('Invalid project file format', true);
+                        }
+                    };
+                    reader.readAsText(file);
                 }
             };
 
@@ -398,18 +646,17 @@
                     UI.showMessage('Processing CV... Please wait.');
 
                     const arrayBuffer = await file.arrayBuffer();
-                    // Convert ArrayBuffer to base64 string for sending via fetch
                     const base64String = arrayBufferToBase64(arrayBuffer);
 
                     const response = await fetch(CONFIG.BACKEND_API_ENDPOINT, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest' // Help backend identify AJAX
+                            'X-Requested-With': 'XMLHttpRequest'
                         },
                         body: JSON.stringify({ 
-  pdfBase64: base64String,
-})
+                            pdfBase64: base64String,
+                        })
                     });
 
                     if (!response.ok) {
@@ -451,7 +698,10 @@
             // --- Save & Reset Functions ---
             function saveFormData(type) {
                 const formId = type === 'cv' ? 'cvTemplateForm' : 'jobTemplateForm';
-                const data = FormSerializer.serialize(document.getElementById(formId));
+                const form = document.getElementById(formId);
+                if (!form) return;
+
+                const data = FormSerializer.serialize(form);
 
                 if (StorageUtils.save(type, data)) {
                     UI.showMessage(`${type === 'cv' ? 'CV' : 'Job'} data saved securely to browser.`);
@@ -467,7 +717,8 @@
 
                 StorageUtils.clear(type);
                 const formId = type === 'cv' ? 'cvTemplateForm' : 'jobTemplateForm';
-                document.getElementById(formId).reset();
+                const form = document.getElementById(formId);
+                if (form) form.reset();
 
                 ['certificationsContainer', 'languagesContainer', 'experienceContainer', 'educationContainer'].forEach(id => {
                     FormUtils.clearDynamicContainer(id);
@@ -484,11 +735,19 @@
                 }
             }
 
-            // --- File Input Change Handler ---
+            // --- Event Listeners ---
             document.getElementById('cvFileInput').addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 const btn = document.getElementById('processBtn');
-                btn.disabled = !file; // Enable button when file is selected
+                if (btn) btn.disabled = !file;
+            });
+
+            document.getElementById('importFileInput').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    ProjectManager.handleImportFile(file);
+                }
+                this.value = ''; // Reset input
             });
 
             // --- Initialization ---
@@ -509,16 +768,16 @@
                     UI.showMessage('Loaded previously saved data from this browser.');
                 }
 
-                // Add keyboard accessibility to file input
+                // Keyboard accessibility
                 document.getElementById('cvFileInput').addEventListener('keydown', function(e) {
                     if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault(); // Prevent scrolling
-                        this.click(); // Trigger file selection
+                        e.preventDefault();
+                        this.click();
                     }
                 });
             });
 
-            // --- Expose functions to global scope for button onclick ---
+            // --- Expose functions to global scope ---
             window.handleCVProcess = handleCVProcess;
             window.saveFormData = saveFormData;
             window.resetForm = resetForm;
@@ -526,6 +785,9 @@
             window.addLanguage = () => DynamicFields.add('languagesContainer', 'language');
             window.addExperience = () => DynamicFields.add('experienceContainer', 'experience');
             window.addEducation = () => DynamicFields.add('educationContainer', 'education');
+            window.exportProject = ProjectManager.exportProject;
+            window.importProject = ProjectManager.importProject;
+
         })();
     </script>
 
