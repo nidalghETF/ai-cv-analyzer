@@ -407,7 +407,10 @@
                             'Content-Type': 'application/json',
                             'X-Requested-With': 'XMLHttpRequest' // Help backend identify AJAX
                         },
-                        body: JSON.stringify({ pdfBase64: base64String })
+                        body: JSON.stringify({ 
+  fileBase64: base64String, 
+  filename: file.name || 'uploaded.pdf' 
+})
                     });
 
                     if (!response.ok) {
