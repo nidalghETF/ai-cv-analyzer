@@ -72,66 +72,220 @@ const CorsUtils = {
 };
 
 // --- AI Prompt Template ---
-const SYSTEM_PROMPT = `
-EXTRACT CV DATA. RETURN ONLY RAW JSON. NO EXPLANATIONS. NO MARKDOWN. NO TEXT OUTSIDE JSON.
+// api/processCV.js
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-**CRITICAL: VIOLATING THESE RULES CAUSES SYSTEM FAILURE:**
-1. ABSOLUTELY NO TEXT BEFORE/AFTER JSON
-2. NO MARKDOWN CODE BLOCKS (```json```)
-3. NO EXPLANATORY COMMENTS
-4. VALID JSON SYNTAX REQUIRED
+const CONFIG = {
+  API_KEY_NAME: "GOOGLE_AI_API_KEY",
+  MODEL_NAME: process.env.GEMINI_MODEL || "gemini-2.0-flash",
+  MAX_PDF_SIZE_MB: 2,
+  TIMEOUT_MS: 60000
+};
 
-**DATA EXTRACTION FIELDS:**
+// OPTIMIZED PROMPT - BALANCES INTELLIGENCE & RELIABILITY
+const SYSTEM_PROMPT = `Extract CV data into this exact JSON structure:
+
 {
   "cvData": {
     "personalInfo": {
-      "fullName": "EXTRACT FROM HEADER/CONTACT",
-      "professionalTitle": "CURRENT JOB TITLE", 
-      "phone": "PHONE PATTERNS",
-      "email": "EMAIL PATTERNS",
-      "location": "CITY/STATE FROM CONTACT",
-      "linkedIn": "LINKEDIN URL",
-      "portfolio": "PORTFOLIO/GITHUB URL"
+      "fullName": "extract from header/contact",
+      "professionalTitle": "current job title", 
+      "phone": "find phone patterns",
+      "email": "find email patterns",
+      "location": "city/state from address",
+      "linkedIn": "linkedin url if present",
+      "portfolio": "portfolio/github url if present",
+      "summary": "extract from summary/profile sections"
     },
-    "professionalSummary": "EXTRACT FROM SUMMARY/PROFILE SECTIONS",
     "coreCompetencies": {
-      "technicalSkills": "EXTRACT FROM SKILLS/TECHNOLOGIES SECTIONS",
-      "softSkills": "EXTRACT FROM STRENGTHS/ATTRIBUTES"
+      "technicalSkills": "extract all technical skills/tools",
+      "softSkills": "extract interpersonal/soft skills"
     },
-    "certifications": ["NAME, ORGANIZATION, DATE"],
-    "languages": ["LANGUAGE, PROFICIENCY"],
-    "experience": ["JOB TITLE, COMPANY, DATES, RESPONSIBILITIES"],
-    "education": ["DEGREE, INSTITUTION, DATES"],
+    "certifications": [],
+    "languages": [],
+    "experience": [],
+    "education": [],
     "additionalInfo": {
-      "projects": "PROJECT DESCRIPTIONS",
-      "publications": "PUBLICATIONS/RESEARCH",
-      "professionalMemberships": "ORGANIZATIONS",
-      "volunteerExperience": "VOLUNTEER WORK"
+      "projects": "",
+      "publications": "", 
+      "professionalMemberships": "",
+      "volunteerExperience": ""
     }
   },
   "jobData": {
-    "jobIdentification": {"jobTitle": "BASED ON CV EXPERIENCE"},
-    "companyInfo": {"industryType": "INFERRED FROM BACKGROUND"},
-    "positionDetails": {"summary": "ROLE DESCRIPTION"},
-    "candidateRequirements": {"essentialSkills": "FROM CV SKILLS"},
-    "compensationAndBenefits": {"estimatedRange": "INDUSTRY STANDARD"}
+    "jobIdentification": {"jobTitle": "based on experience"},
+    "companyInfo": {"industryType": "inferred from background"},
+    "positionDetails": {"summary": "role description"},
+    "candidateRequirements": {"essentialSkills": "from cv skills"},
+    "compensationAndBenefits": {"estimatedRange": "industry standard"}
   }
 }
 
-**EXTRACTION RULES:**
-- FIND LITERAL TEXT FIRST
-- INFER ONLY IF DATA ABSENT
-- USE "N/A" FOR TRULY MISSING FIELDS
-- DATES AS YYYY-MM-DD
+CRITICAL: Return ONLY valid JSON. No explanations, no markdown, no other text.`;
 
-**OUTPUT MUST BE:**
-- VALID JSON PARSEABLE BY JSON.parse()
-- NO OTHER TEXT
-- NO CODE FENCES
-- NO EXPLANATIONS
+let genAI, model;
 
-BEGIN JSON:
-`;
+// BULLETPROOF JSON EXTRACTION UTILITY
+const JsonUtils = {
+  extractPureJson: (text) => {
+    if (!text || typeof text !== 'string') {
+      throw new Error('Empty or invalid AI response');
+    }
+
+    let jsonString = text.trim();
+    
+    // Remove common AI artifacts
+    jsonString = jsonString
+      .replace(/^```json\s*/i, '')  // Remove opening ```json
+      .replace(/\s*```$/i, '')      // Remove closing ```
+      .replace(/^Here( is|'s) the JSON[:\s]*/i, '') // Remove introductory text
+      .trim();
+
+    // Find JSON object boundaries
+    const firstBrace = jsonString.indexOf('{');
+    const lastBrace = jsonString.lastIndexOf('}');
+    
+    if (firstBrace === -1 || lastBrace === -1 || firstBrace >= lastBrace) {
+      console.error('JSON boundaries not found. Raw text:', text.substring(0, 200));
+      throw new Error('No valid JSON object found in AI response');
+    }
+
+    // Extract pure JSON
+    jsonString = jsonString.substring(firstBrace, lastBrace + 1).trim();
+    
+    // Validate basic JSON structure
+    if (!jsonString.startsWith('{') || !jsonString.endsWith('}')) {
+      throw new Error('Extracted text is not valid JSON');
+    }
+
+    return jsonString;
+  },
+
+  safeJsonParse: (jsonString) => {
+    try {
+      return JSON.parse(jsonString);
+    } catch (initialError) {
+      console.warn('Initial JSON parse failed, attempting repairs...');
+      
+      // Common AI JSON fixes
+      let repaired = jsonString
+        .replace(/(\w+):/g, '"$1":')                    // Add quotes to unquoted keys
+        .replace(/,(\s*[}\]])/g, '$1')                  // Remove trailing commas
+        .replace(/'/g, '"')                             // Replace single quotes with double
+        .replace(/(\s*:\s*)'([^']*)'/g, '$1"$2"')       // Fix quoted values
+        .replace(/:\s*(\w+)(\s*[,\}])/g, ':"$1"$2')     // Quote unquoted string values
+        .replace(/\n/g, ' ')                            // Remove newlines
+        .trim();
+
+      try {
+        return JSON.parse(repaired);
+      } catch (repairError) {
+        console.error('JSON repair failed. Original:', jsonString);
+        console.error('Repaired:', repaired);
+        throw new Error(`JSON parse failed: ${repairError.message}`);
+      }
+    }
+  }
+};
+
+export default async function handler(request, response) {
+  // CORS headers
+  response.setHeader('Access-Control-Allow-Origin', '*');
+  response.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (request.method === 'OPTIONS') {
+    return response.status(200).end();
+  }
+
+  if (request.method !== 'POST') {
+    return response.status(405).json({ message: 'Method not allowed' });
+  }
+
+  if (!request.body) {
+    return response.status(400).json({ message: 'Request body is missing' });
+  }
+
+  const { pdfBase64 } = request.body;
+
+  if (!pdfBase64) {
+    return response.status(400).json({ message: 'Missing pdfBase64' });
+  }
+
+  try {
+    const API_KEY = process.env[CONFIG.API_KEY_NAME];
+    if (!API_KEY) {
+      throw new Error('Missing API key configuration');
+    }
+
+    genAI = new GoogleGenerativeAI(API_KEY);
+    model = genAI.getGenerativeModel({ model: CONFIG.MODEL_NAME });
+
+    console.log('[CV Process] Request received');
+
+    // Clean base64 data
+    const cleanBase64 = pdfBase64.startsWith('data:application/pdf;base64,') 
+      ? pdfBase64.split(',')[1] 
+      : pdfBase64;
+
+    const pdfDataPart = {
+      inlineData: {
+        data: cleanBase64,
+        mimeType: "application/pdf"
+      }
+    };
+
+    // AI API call with timeout
+    const aiResult = await Promise.race([
+      model.generateContent([
+        { text: SYSTEM_PROMPT },
+        pdfDataPart
+      ]),
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('AI request timeout')), CONFIG.TIMEOUT_MS)
+      )
+    ]);
+
+    const responseText = aiResult.response.text();
+    console.log('[CV Process] AI response length:', responseText.length);
+
+    // BULLETPROOF JSON PROCESSING
+    const jsonString = JsonUtils.extractPureJson(responseText);
+    const parsedData = JsonUtils.safeJsonParse(jsonString);
+
+    // Validate minimum structure
+    if (!parsedData.cvData) {
+      parsedData.cvData = {};
+    }
+    if (!parsedData.jobData) {
+      parsedData.jobData = {};
+    }
+
+    console.log('[CV Process] Successfully parsed CV data');
+    return response.status(200).json(parsedData);
+
+  } catch (error) {
+    console.error('[CV Process] Error:', {
+      message: error.message,
+      type: error.constructor.name,
+      timestamp: new Date().toISOString()
+    });
+
+    // User-friendly error messages
+    let userMessage = "Unable to process CV. Please try again.";
+    if (error.message.includes('API key') || error.message.includes('configuration')) {
+      userMessage = "Service configuration error. Please contact administrator.";
+    } else if (error.message.includes('overloaded') || error.message.includes('503')) {
+      userMessage = "AI service is temporarily busy. Please try again in 30 seconds.";
+    } else if (error.message.includes('timeout')) {
+      userMessage = "Request timed out. Please try a smaller PDF file.";
+    } else if (error.message.includes('JSON')) {
+      userMessage = "AI service returned invalid data format. Please try again.";
+    }
+
+    return response.status(500).json({ message: userMessage });
+  }
+}
 
 // --- Main Handler ---
 /**
