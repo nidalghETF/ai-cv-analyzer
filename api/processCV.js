@@ -73,68 +73,65 @@ const CorsUtils = {
 
 // --- AI Prompt Template ---
 const SYSTEM_PROMPT = `
-CRITICAL: You are a PRECISION DATA EXTRACTOR. Follow this TWO-STAGE process:
+EXTRACT CV DATA. RETURN ONLY RAW JSON. NO EXPLANATIONS. NO MARKDOWN. NO TEXT OUTSIDE JSON.
 
-## STAGE 1: LITERAL EXTRACTION (NON-NEGOTIABLE)
-Extract EXACT text for these fields FROM THE CV TEXT. NO INFERENCE YET.
+**CRITICAL: VIOLATING THESE RULES CAUSES SYSTEM FAILURE:**
+1. ABSOLUTELY NO TEXT BEFORE/AFTER JSON
+2. NO MARKDOWN CODE BLOCKS (```json```)
+3. NO EXPLANATORY COMMENTS
+4. VALID JSON SYNTAX REQUIRED
 
-**PERSONAL INFO - FIND EXACT MATCHES:**
-- "Full Name": Scan headers, top-center, contact sections. Extract ANY name pattern.
-- "Professional Title": Current/most recent job title. Copy EXACT title text.
-- "Phone": Find phone patterns: xxx-xxx-xxxx, (xxx) xxx-xxxx, +x xxx xxx xxxx
-- "Email": Find email patterns: name@domain.com, name@company.com
-- "Location": City, State from address blocks, contact info
-- "LinkedIn": URLs containing "linkedin.com/in/"
-- "Portfolio": URLs with "github.com", "portfolio", personal domains
+**DATA EXTRACTION FIELDS:**
+{
+  "cvData": {
+    "personalInfo": {
+      "fullName": "EXTRACT FROM HEADER/CONTACT",
+      "professionalTitle": "CURRENT JOB TITLE", 
+      "phone": "PHONE PATTERNS",
+      "email": "EMAIL PATTERNS",
+      "location": "CITY/STATE FROM CONTACT",
+      "linkedIn": "LINKEDIN URL",
+      "portfolio": "PORTFOLIO/GITHUB URL"
+    },
+    "professionalSummary": "EXTRACT FROM SUMMARY/PROFILE SECTIONS",
+    "coreCompetencies": {
+      "technicalSkills": "EXTRACT FROM SKILLS/TECHNOLOGIES SECTIONS",
+      "softSkills": "EXTRACT FROM STRENGTHS/ATTRIBUTES"
+    },
+    "certifications": ["NAME, ORGANIZATION, DATE"],
+    "languages": ["LANGUAGE, PROFICIENCY"],
+    "experience": ["JOB TITLE, COMPANY, DATES, RESPONSIBILITIES"],
+    "education": ["DEGREE, INSTITUTION, DATES"],
+    "additionalInfo": {
+      "projects": "PROJECT DESCRIPTIONS",
+      "publications": "PUBLICATIONS/RESEARCH",
+      "professionalMemberships": "ORGANIZATIONS",
+      "volunteerExperience": "VOLUNTEER WORK"
+    }
+  },
+  "jobData": {
+    "jobIdentification": {"jobTitle": "BASED ON CV EXPERIENCE"},
+    "companyInfo": {"industryType": "INFERRED FROM BACKGROUND"},
+    "positionDetails": {"summary": "ROLE DESCRIPTION"},
+    "candidateRequirements": {"essentialSkills": "FROM CV SKILLS"},
+    "compensationAndBenefits": {"estimatedRange": "INDUSTRY STANDARD"}
+  }
+}
 
-**CONTACT INFO EXTRACTION COMMAND:**
-IF any contact info exists in CV → EXTRACT IT LITERALLY
-IF no contact info found → leave empty (will infer in Stage 2)
+**EXTRACTION RULES:**
+- FIND LITERAL TEXT FIRST
+- INFER ONLY IF DATA ABSENT
+- USE "N/A" FOR TRULY MISSING FIELDS
+- DATES AS YYYY-MM-DD
 
-## STAGE 2: CONTENT EXTRACTION (COMPREHENSIVE)
+**OUTPUT MUST BE:**
+- VALID JSON PARSEABLE BY JSON.parse()
+- NO OTHER TEXT
+- NO CODE FENCES
+- NO EXPLANATIONS
 
-**PROFESSIONAL SUMMARY:**
-- PRIMARY: Extract from "Summary", "Profile", "Objective" sections
-- FALLBACK: If none, create 2-3 sentence summary from experience highlights
-- NEVER leave empty
-
-**CORE COMPETENCIES:**
-- "Technical Skills": Extract ALL from "Skills", "Technical", "Technologies" sections + tools mentioned in experience
-- "Soft Skills": Extract from "Strengths", "Attributes" or infer from achievement descriptions
-- FORMAT: Comma-separated, preserve original terminology
-
-**EXPERIENCE & EDUCATION (MANDATORY FIELDS):**
-- Extract EVERY role: Job Title, Company, Dates, Location
-- Responsibilities: Key daily tasks from job descriptions
-- Achievements: Quantified results, awards, promotions
-- Education: ALL degrees with Institution, Degree, Dates
-
-**ADDITIONAL SECTIONS:**
-- Search thoroughly for: Projects, Publications, Memberships, Volunteer work
-- If sections exist → EXTRACT
-- If no sections → leave empty (not applicable)
-
-## STAGE 3: INTELLIGENT COMPLETION (ONLY FOR EMPTY FIELDS)
-
-**ONLY IF FIELD IS EMPTY AFTER LITERAL EXTRACTION:**
-
-- "Full Name": If empty after search → use name from email address OR "Not Specified"
-- "Professional Title": If empty → use most recent job title from experience
-- "Location": If empty → use location from most recent job
-- "Phone/Email": If empty → leave empty (privacy)
-- "LinkedIn/Portfolio": If empty → leave empty
-
-## OUTPUT VALIDATION CHECKLIST:
-✅ Personal Info: At least Name and Title should have values  
-✅ Experience: Minimum 1 role extracted
-✅ Education: Minimum 1 institution  
-✅ Summary: Never empty
-✅ Skills: Technical skills should not be empty if CV mentions technologies
-
-**CRITICAL RULE:** Prefer LITERAL extraction over intelligent inference. Only infer when literal data is completely absent.
-
-Return ONLY valid JSON. No explanations.
-`.trim();
+BEGIN JSON:
+`;
 
 // --- Main Handler ---
 /**
