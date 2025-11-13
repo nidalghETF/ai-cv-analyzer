@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const CONFIG = {
   API_KEY_NAME: "GOOGLE_AI_API_KEY",
-  MODEL_NAME: process.env.GEMINI_MODEL || "gemini-2.0-flash",
+  MODEL_NAME: process.env.GEMINI_MODEL || "gemini-2.5-flash",
   MAX_PDF_SIZE_MB: 2,
   TIMEOUT_MS: 60000
 };
