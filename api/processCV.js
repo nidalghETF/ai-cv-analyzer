@@ -8,37 +8,29 @@ const CONFIG = {
   TIMEOUT_MS: 60000
 };
 
-const SYSTEM_PROMPT = `CRITICAL: You are a professional CV writer and career coach. Analyze this CV and create compelling content.
+const SYSTEM_PROMPT = `Extract CV data into this exact JSON structure. CREATE PROFESSIONAL SUMMARY and DYNAMIC ARRAYS.
 
-PROFESSIONAL SUMMARY - MUST CREATE:
-- Synthesize a 3-4 sentence professional narrative from the entire CV
-- Highlight: career trajectory, key achievements, core expertise, value proposition
-- Make it compelling and human - not just facts concatenation
-- Example: "Seasoned software engineer with 8+ years in fintech, specializing in scalable cloud architectures. Led teams that delivered 40% performance improvements. Passionate about mentoring junior developers and driving technical excellence through agile methodologies."
+PROFESSIONAL SUMMARY REQUIREMENT:
+- MUST create 3-4 sentence professional summary from entire CV
+- Synthesize from: career highlights, key skills, major achievements, career trajectory
+- Make it compelling and professional - not just concatenated text
+- NEVER leave empty - create from experience if no explicit summary exists
 
-EXTRACTION RULES:
-- Personal Info: Extract literally from contact sections
-- Skills: Extract all technical and soft skills comprehensively  
-- Experience: Extract all roles with achievements and responsibilities
-- Education: Extract all degrees and certifications
-- Projects: Extract as structured objects
-
-OUTPUT FORMAT - STRICT JSON:
 {
   "cvData": {
     "personalInfo": {
-      "fullName": "extract literally",
-      "professionalTitle": "current/most recent title",
-      "phone": "extract patterns", 
-      "email": "extract patterns",
-      "location": "city/state",
-      "linkedIn": "url if present",
-      "portfolio": "url if present",
-      "summary": "CREATE COMPELLING PROFESSIONAL SUMMARY HERE - NEVER LEAVE EMPTY"
+      "fullName": "extract from header/contact",
+      "professionalTitle": "current job title", 
+      "phone": "find phone patterns",
+      "email": "find email patterns",
+      "location": "city/state from address",
+      "linkedIn": "linkedin url if present",
+      "portfolio": "portfolio/github url if present",
+      "summary": "CREATE COMPELLING PROFESSIONAL SUMMARY HERE"
     },
     "coreCompetencies": {
-      "technicalSkills": "comma-separated from skills sections",
-      "softSkills": "comma-separated from strengths/attributes"
+      "technicalSkills": "extract all technical skills/tools as comma list",
+      "softSkills": "extract interpersonal/soft skills as comma list"
     },
     "certifications": [
       {"name": "cert name", "issuingOrganization": "issuer", "date": "YYYY-MM-DD"}
@@ -48,105 +40,45 @@ OUTPUT FORMAT - STRICT JSON:
     ],
     "experience": [
       {
-        "jobTitle": "position",
+        "jobTitle": "position", 
         "companyName": "employer", 
         "employmentDates": "date range",
-        "location": "city/state",
-        "keyResponsibilities": "main duties",
+        "location": "city/state", 
+        "keyResponsibilities": "bullet points", 
         "keyAchievements": "quantified results"
       }
     ],
     "education": [
       {
-        "degree": "degree name",
-        "institutionName": "school",
-        "completionDate": "year", 
+        "degree": "degree name", 
+        "institutionName": "school", 
+        "completionDate": "graduation year", 
         "location": "city/state"
       }
     ],
     "additionalInfo": {
-      "projects": "extract project details",
-      "publications": "research/papers",
-      "professionalMemberships": "organizations",
-      "volunteerExperience": "volunteer work"
+      "projects": "EXTRACT AS ARRAY OF PROJECT OBJECTS - NOT FLAT TEXT",
+      "publications": "extract publications/research", 
+      "professionalMemberships": "extract organizations",
+      "volunteerExperience": "extract volunteer work"
     }
   },
   "jobData": {
-    "jobIdentification": {"jobTitle": "based on experience"},
-    "companyInfo": {"industryType": "inferred industry"},
-    "positionDetails": {"summary": "job description"},
-    "candidateRequirements": {"essentialSkills": "required skills"},
-    "compensationAndBenefits": {"estimatedRange": "salary range"}
+    "jobIdentification": {"jobTitle": "CREATE BASED ON EXPERIENCE"},
+    "companyInfo": {"industryType": "inferred from background"},
+    "positionDetails": {"summary": "CREATE JOB DESCRIPTION"},
+    "candidateRequirements": {"essentialSkills": "from cv skills"},
+    "compensationAndBenefits": {"estimatedRange": "industry standard"}
   }
 }
 
-NON-NEGOTIABLE: "summary" field MUST contain AI-generated professional narrative. Use career highlights if no explicit summary exists.
-Return ONLY valid JSON - no explanations.`;
-
-**CRITICAL RULES:**
-- "summary" field MUST contain AI-generated professional summary
-- "projects" should be structured objects, not flat text
+CRITICAL RULES:
+- summary field MUST contain AI-generated professional summary
+- projects should be structured objects, not flat text
 - Fill ALL arrays with actual data from CV
 - Return ONLY valid JSON`;
 
 let genAI, model;
-
-const JsonUtils = {
-  extractPureJson: (text) => {
-    if (!text || typeof text !== 'string') {
-      throw new Error('Empty or invalid AI response');
-    }
-
-    let jsonString = text.trim();
-    
-    jsonString = jsonString
-      .replace(/^```json\s*/i, '')
-      .replace(/\s*```$/i, '')
-      .replace(/^Here( is|'s) the JSON[:\s]*/i, '')
-      .trim();
-
-    const firstBrace = jsonString.indexOf('{');
-    const lastBrace = jsonString.lastIndexOf('}');
-    
-    if (firstBrace === -1 || lastBrace === -1 || firstBrace >= lastBrace) {
-      console.error('JSON boundaries not found. Raw text:', text.substring(0, 200));
-      throw new Error('No valid JSON object found in AI response');
-    }
-
-    jsonString = jsonString.substring(firstBrace, lastBrace + 1).trim();
-    
-    if (!jsonString.startsWith('{') || !jsonString.endsWith('}')) {
-      throw new Error('Extracted text is not valid JSON');
-    }
-
-    return jsonString;
-  },
-
-  safeJsonParse: (jsonString) => {
-    try {
-      return JSON.parse(jsonString);
-    } catch (initialError) {
-      console.warn('Initial JSON parse failed, attempting repairs...');
-      
-      let repaired = jsonString
-        .replace(/(\w+):/g, '"$1":')
-        .replace(/,(\s*[}\]])/g, '$1')
-        .replace(/'/g, '"')
-        .replace(/(\s*:\s*)'([^']*)'/g, '$1"$2"')
-        .replace(/:\s*(\w+)(\s*[,\}])/g, ':"$1"$2')
-        .replace(/\n/g, ' ')
-        .trim();
-
-      try {
-        return JSON.parse(repaired);
-      } catch (repairError) {
-        console.error('JSON repair failed. Original:', jsonString);
-        console.error('Repaired:', repaired);
-        throw new Error(`JSON parse failed: ${repairError.message}`);
-      }
-    }
-  }
-};
 
 export default async function handler(request, response) {
   response.setHeader('Access-Control-Allow-Origin', '*');
@@ -193,48 +125,37 @@ export default async function handler(request, response) {
       }
     };
 
-    const aiResult = await Promise.race([
-      model.generateContent([
-        { text: SYSTEM_PROMPT },
-        pdfDataPart
-      ]),
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('AI request timeout')), CONFIG.TIMEOUT_MS)
-      )
+    const aiResult = await model.generateContent([
+      { text: SYSTEM_PROMPT },
+      pdfDataPart
     ]);
 
     const responseText = aiResult.response.text();
-    console.log('[CV Process] AI response length:', responseText.length);
+    console.log('[CV Process] AI response received');
 
-    const jsonString = JsonUtils.extractPureJson(responseText);
-    const parsedData = JsonUtils.safeJsonParse(jsonString);
-
-    if (!parsedData.cvData) {
-      parsedData.cvData = {};
+    let jsonString = responseText.trim();
+    jsonString = jsonString.replace(/```json\s*|\s*```/g, '');
+    
+    const firstBrace = jsonString.indexOf('{');
+    const lastBrace = jsonString.lastIndexOf('}');
+    
+    if (firstBrace === -1 || lastBrace === -1) {
+      throw new Error('No JSON object found in AI response');
     }
-    if (!parsedData.jobData) {
-      parsedData.jobData = {};
-    }
+    
+    jsonString = jsonString.substring(firstBrace, lastBrace + 1);
+    const parsedData = JSON.parse(jsonString);
 
-    console.log('[CV Process] Successfully parsed CV data');
     return response.status(200).json(parsedData);
 
   } catch (error) {
-    console.error('[CV Process] Error:', {
-      message: error.message,
-      type: error.constructor.name,
-      timestamp: new Date().toISOString()
-    });
-
+    console.error('[CV Process] Error:', error.message);
+    
     let userMessage = "Unable to process CV. Please try again.";
-    if (error.message.includes('API key') || error.message.includes('configuration')) {
-      userMessage = "Service configuration error. Please contact administrator.";
-    } else if (error.message.includes('overloaded') || error.message.includes('503')) {
-      userMessage = "AI service is temporarily busy. Please try again in 30 seconds.";
-    } else if (error.message.includes('timeout')) {
-      userMessage = "Request timed out. Please try a smaller PDF file.";
-    } else if (error.message.includes('JSON')) {
-      userMessage = "AI service returned invalid data format. Please try again.";
+    if (error.message.includes('API key')) {
+      userMessage = "Service configuration error.";
+    } else if (error.message.includes('overloaded')) {
+      userMessage = "AI service is busy. Please try again in 30 seconds.";
     }
 
     return response.status(500).json({ message: userMessage });
