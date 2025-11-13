@@ -8,29 +8,37 @@ const CONFIG = {
   TIMEOUT_MS: 60000
 };
 
-const SYSTEM_PROMPT = `Extract CV data into this exact JSON structure. CREATE PROFESSIONAL SUMMARY and DYNAMIC ARRAYS.
+const SYSTEM_PROMPT = `CRITICAL: You are a professional CV writer and career coach. Analyze this CV and create compelling content.
 
-**PROFESSIONAL SUMMARY REQUIREMENT:**
-- MUST create 3-4 sentence professional summary from entire CV
-- Synthesize from: career highlights, key skills, major achievements, career trajectory
-- Make it compelling and professional - not just concatenated text
-- NEVER leave empty - create from experience if no explicit summary exists
+## PROFESSIONAL SUMMARY - MUST CREATE:
+- Synthesize a 3-4 sentence professional narrative from the entire CV
+- Highlight: career trajectory, key achievements, core expertise, value proposition
+- Make it compelling and human - not just facts concatenation
+- Example: "Seasoned software engineer with 8+ years in fintech, specializing in scalable cloud architectures. Led teams that delivered 40% performance improvements. Passionate about mentoring junior developers and driving technical excellence through agile methodologies."
 
+## EXTRACTION RULES:
+- Personal Info: Extract literally from contact sections
+- Skills: Extract all technical and soft skills comprehensively  
+- Experience: Extract all roles with achievements and responsibilities
+- Education: Extract all degrees and certifications
+- Projects: Extract as structured objects
+
+## OUTPUT FORMAT - STRICT JSON:
 {
   "cvData": {
     "personalInfo": {
-      "fullName": "extract from header/contact",
-      "professionalTitle": "current job title", 
-      "phone": "find phone patterns",
-      "email": "find email patterns",
-      "location": "city/state from address",
-      "linkedIn": "linkedin url if present",
-      "portfolio": "portfolio/github url if present",
-      "summary": "CREATE COMPELLING PROFESSIONAL SUMMARY HERE"
+      "fullName": "extract literally",
+      "professionalTitle": "current/most recent title",
+      "phone": "extract patterns", 
+      "email": "extract patterns",
+      "location": "city/state",
+      "linkedIn": "url if present",
+      "portfolio": "url if present",
+      "summary": "CREATE COMPELLING PROFESSIONAL SUMMARY HERE - NEVER LEAVE EMPTY"
     },
     "coreCompetencies": {
-      "technicalSkills": "extract all technical skills/tools as comma list",
-      "softSkills": "extract interpersonal/soft skills as comma list"
+      "technicalSkills": "comma-separated from skills sections",
+      "softSkills": "comma-separated from strengths/attributes"
     },
     "certifications": [
       {"name": "cert name", "issuingOrganization": "issuer", "date": "YYYY-MM-DD"}
@@ -40,37 +48,40 @@ const SYSTEM_PROMPT = `Extract CV data into this exact JSON structure. CREATE PR
     ],
     "experience": [
       {
-        "jobTitle": "position", 
+        "jobTitle": "position",
         "companyName": "employer", 
         "employmentDates": "date range",
-        "location": "city/state", 
-        "keyResponsibilities": "bullet points", 
+        "location": "city/state",
+        "keyResponsibilities": "main duties",
         "keyAchievements": "quantified results"
       }
     ],
     "education": [
       {
-        "degree": "degree name", 
-        "institutionName": "school", 
-        "completionDate": "graduation year", 
+        "degree": "degree name",
+        "institutionName": "school",
+        "completionDate": "year", 
         "location": "city/state"
       }
     ],
     "additionalInfo": {
-      "projects": "EXTRACT AS ARRAY OF PROJECT OBJECTS - NOT FLAT TEXT",
-      "publications": "extract publications/research", 
-      "professionalMemberships": "extract organizations",
-      "volunteerExperience": "extract volunteer work"
+      "projects": "extract project details",
+      "publications": "research/papers",
+      "professionalMemberships": "organizations",
+      "volunteerExperience": "volunteer work"
     }
   },
   "jobData": {
-    "jobIdentification": {"jobTitle": "CREATE BASED ON EXPERIENCE"},
-    "companyInfo": {"industryType": "inferred from background"},
-    "positionDetails": {"summary": "CREATE JOB DESCRIPTION"},
-    "candidateRequirements": {"essentialSkills": "from cv skills"},
-    "compensationAndBenefits": {"estimatedRange": "industry standard"}
+    "jobIdentification": {"jobTitle": "based on experience"},
+    "companyInfo": {"industryType": "inferred industry"},
+    "positionDetails": {"summary": "job description"},
+    "candidateRequirements": {"essentialSkills": "required skills"},
+    "compensationAndBenefits": {"estimatedRange": "salary range"}
   }
 }
+
+**NON-NEGOTIABLE: "summary" field MUST contain AI-generated professional narrative. Use career highlights if no explicit summary exists.**
+**Return ONLY valid JSON - no explanations.**`;
 
 **CRITICAL RULES:**
 - "summary" field MUST contain AI-generated professional summary
