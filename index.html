@@ -482,25 +482,25 @@ const FormSerializer = {
     }, 100);
   },
 
-  flattenObject: (obj, prefix = '') => {
-    const flattened = {};
-    for (const [key, value] of Object.entries(obj)) {
-      const newKey = prefix ? `${prefix}.${key}` : key;
-      if (Array.isArray(value)) {
-        value.forEach((item, index) => {
-          Object.assign(flattened, FormSerializer.flattenObject(item, `${newKey}.${index}`));
-        });
-      } else if (typeof value === 'object' && value !== null) {
-        Object.assign(flattened, FormSerializer.flattenObject(value, newKey));
-      } else {
-        flattened[newKey] = value;
-      }
+flattenObject: (obj, prefix = '') => {
+  const flattened = {};
+  for (const [key, value] of Object.entries(obj)) {
+    const newKey = prefix ? `${prefix}.${key}` : key;
+    if (Array.isArray(value)) {
+      value.forEach((item, index) => {
+        Object.assign(flattened, FormSerializer.flattenObject(item, `${newKey}.${index}`));
+      });
+    } else if (typeof value === 'object' && value !== null) {
+      Object.assign(flattened, FormSerializer.flattenObject(value, newKey));
+    } else {
+      flattened[newKey] = value;
     }
-    return flattened;
-  },
+  }
+  return flattened;
+},
 
-  serialize: (form) => {
-    const formData = new FormData(form);
+serialize: (form) => {
+  const formData = new FormData(form)
     const result = {};
 
     for (const [key, value] of formData.entries()) {
