@@ -479,63 +479,64 @@ const FormSerializer = {
           element.value = SecurityUtils.sanitizeForDOM(value);
         }
       });
-    }, 100); // Slightly longer delay to ensure DOM is ready
+    }, 100);
   },
-  // ... keep the rest of your existing FormSerializer functions
+
+  flattenObject: (obj, prefix = '') => {
+    const flattened = {};
+    for (const [key, value] of Object.entries(obj)) {
+      const newKey = prefix ? `${prefix}.${key}` : key;
+      if (Array.isArray(value)) {
+        value.forEach((item, index) => {
+          Object.assign(flattened, FormSerializer.flattenObject(item, `${newKey}.${index}`));
+        });
+      } else if (typeof value === 'object' && value !== null) {
+        Object.assign(flattened, FormSerializer.flattenObject(value, newKey));
+      } else {
+        flattened[newKey] = value;
+      }
+    }
+    return flattened;
+  },
+
+  serialize: (form) => {
+    const formData = new FormData(form);
+    const result = {};
+
+    for (const [key, value] of formData.entries()) {
+      FormSerializer.setNestedValue(result, key, value);
+    }
+    return result;
+  },
+
+  setNestedValue: (obj, path, value) => {
+    const keys = path.split('.');
+    let current = obj;
+
+    for (let i = 0; i < keys.length - 1; i++) {
+      const key = keys[i];
+      const nextKey = keys[i + 1];
+      const isArrayIndex = /^\d+$/.test(nextKey);
+
+      if (!(key in current)) {
+        current[key] = isArrayIndex ? [] : {};
+      }
+      current = current[key];
+    }
+
+    const finalKey = keys[keys.length - 1];
+    if (Array.isArray(current)) {
+      const index = parseInt(finalKey, 10);
+      if (!isNaN(index)) {
+        current[index] = value;
+      } else {
+        current.push({ [finalKey]: value });
+      }
+    } else {
+      current[finalKey] = value;
+    }
+  }
 };
-                flattenObject: (obj, prefix = '') => {
-                    const flattened = {};
-                    for (const [key, value] of Object.entries(obj)) {
-                        const newKey = prefix ? `${prefix}.${key}` : key;
-                        if (Array.isArray(value)) {
-                            value.forEach((item, index) => {
-                                Object.assign(flattened, FormSerializer.flattenObject(item, `${newKey}.${index}`));
-                            });
-                        } else if (typeof value === 'object' && value !== null) {
-                            Object.assign(flattened, FormSerializer.flattenObject(value, newKey));
-                        } else {
-                            flattened[newKey] = value;
-                        }
-                    }
-                    return flattened;
-                },
-                serialize: (form) => {
-                    const formData = new FormData(form);
-                    const result = {};
-
-                    for (const [key, value] of formData.entries()) {
-                        FormSerializer.setNestedValue(result, key, value);
-                    }
-                    return result;
-                },
-                setNestedValue: (obj, path, value) => {
-                    const keys = path.split('.');
-                    let current = obj;
-
-                    for (let i = 0; i < keys.length - 1; i++) {
-                        const key = keys[i];
-                        const nextKey = keys[i + 1];
-                        const isArrayIndex = /^\d+$/.test(nextKey);
-
-                        if (!(key in current)) {
-                            current[key] = isArrayIndex ? [] : {};
-                        }
-                        current = current[key];
-                    }
-
-                    const finalKey = keys[keys.length - 1];
-                    if (Array.isArray(current)) {
-                        const index = parseInt(finalKey, 10);
-                        if (!isNaN(index)) {
-                            current[index] = value;
-                        } else {
-                            current.push({ [finalKey]: value });
-                        }
-                    } else {
-                        current[finalKey] = value;
-                    }
-                }
-            };
 
             // --- UI State Management ---
             const UI = {
