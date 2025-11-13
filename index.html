@@ -111,7 +111,7 @@
             Always review AI-generated content for accuracy. Max file size: 2MB.
         </p>
         <input type="file" id="cvFileInput" accept=".pdf" aria-label="CV PDF file input" />
-        <button id="processBtn" onclick="handleCVProcess()" disabled>Analyze CV with AI</button>
+        <button id="processBtn" disabled>Analyze CV with AI</button>
     </div>
 
     <div id="cvTemplateSection" class="template-section" style="display: none;">
@@ -148,10 +148,10 @@
             </div>
 
             <h3>Professional Summary</h3>
-<div class="form-group">
-    <label for="personalInfo.summary">AI-Generated Summary:</label>
-    <textarea name="personalInfo.summary" id="personalInfo.summary" rows="4" placeholder="AI will generate a professional summary from your CV"></textarea>
-</div>
+            <div class="form-group">
+                <label for="personalInfo.summary">AI-Generated Summary:</label>
+                <textarea name="personalInfo.summary" id="personalInfo.summary" rows="4" placeholder="AI will generate a professional summary from your CV"></textarea>
+            </div>
 
             <h3>Core Competencies</h3>
             <div class="form-group">
@@ -165,23 +165,23 @@
 
             <h3>Certifications</h3>
             <div id="certificationsContainer" class="dynamic-container"></div>
-            <button type="button" class="btn-secondary add-btn" onclick="addCertification()">+ Add Certification</button>
+            <button type="button" class="btn-secondary add-btn" >+ Add Certification</button>
 
             <h3>Languages</h3>
             <div id="languagesContainer" class="dynamic-container"></div>
-            <button type="button" class="btn-secondary add-btn" onclick="addLanguage()">+ Add Language</button>
+            <button type="button" class="btn-secondary add-btn" >+ Add Language</button>
 
             <h3>Professional Experience</h3>
             <div id="experienceContainer" class="dynamic-container"></div>
-            <button type="button" class="btn-secondary add-btn" onclick="addExperience()">+ Add Experience</button>
+            <button type="button" class="btn-secondary add-btn" >+ Add Experience</button>
 
             <h3>Education</h3>
             <div id="educationContainer" class="dynamic-container"></div>
-            <button type="button" class="btn-secondary add-btn" onclick="addEducation()">+ Add Education</button>
+            <button type="button" class="btn-secondary add-btn" >+ Add Education</button>
 
             <h3>Projects</h3>
             <div id="projectsContainer" class="dynamic-container"></div>
-            <button type="button" class="btn-secondary add-btn" onclick="addProject()">+ Add Project</button>
+            <button type="button" class="btn-secondary add-btn" >+ Add Project</button>
 
             <h3>Additional Information</h3>
             <div class="form-group">
@@ -198,9 +198,9 @@
             </div>
         </form>
         <div class="action-buttons">
-            <button type="button" onclick="saveFormData('cv')">Save CV Data</button>
-            <button type="button" class="btn-danger" onclick="resetForm('cv')">Clear CV</button>
-            <button type="button" onclick="exportProject()">Export Project as JSON</button>
+            <button type="button" >Save CV Data</button>
+            <button type="button" class="btn-danger" >Clear CV</button>
+            <button type="button" >Export Project as JSON</button>
         </div>
     </div>
 
@@ -208,33 +208,34 @@
         <h2>AI-Generated Job Questionnaire (Editable)</h2>
         <form id="jobTemplateForm">
             <h3>Job Targeting Strategy</h3>
-<div class="form-group">
-    <label for="jobIdentification.jobTitles">Recommended Job Titles:</label>
-    <textarea name="jobIdentification.jobTitles" id="jobIdentification.jobTitles" rows="3" placeholder="Senior Frontend Developer, Full Stack Engineer, React Specialist..."></textarea>
-</div>
+            <div class="form-group">
+                <label for="jobIdentification.jobTitles">Recommended Job Titles:</label>
+                <textarea name="jobIdentification.jobTitles" id="jobIdentification.jobTitles" rows="3" placeholder="Senior Frontend Developer, Full Stack Engineer, React Specialist..."></textarea>
+            </div>
 
-<div class="form-group">
-    <label for="companyInformation.industrySector">Industry Sector:</label>
-    <input type="text" name="companyInformation.industrySector" id="companyInformation.industrySector" placeholder="Technology, FinTech, E-commerce...">
-</div>
+            <div class="form-group">
+                <label for="companyInformation.industrySector">Industry Sector:</label>
+                <input type="text" name="companyInformation.industrySector" id="companyInformation.industrySector" placeholder="Technology, FinTech, E-commerce...">
+            </div>
 
-<h3>Candidate Requirements</h3>
-<div class="form-group">
-    <label for="candidateRequirements.requiredEducationLevel">Required Education:</label>
-    <input type="text" name="candidateRequirements.requiredEducationLevel" id="candidateRequirements.requiredEducationLevel" placeholder="Bachelor's Degree in Computer Science">
-</div>
-<div class="form-group">
-    <label for="candidateRequirements.requiredFieldOfStudy">Field of Study:</label>
-    <input type="text" name="candidateRequirements.requiredFieldOfStudy" id="candidateRequirements.requiredFieldOfStudy" placeholder="Computer Science, Software Engineering">
-</div>
-<div class="form-group">
-    <label for="candidateRequirements.requiredYearsOfExperience">Years of Experience:</label>
-    <input type="text" name="candidateRequirements.requiredYearsOfExperience" id="candidateRequirements.requiredYearsOfExperience" placeholder="3-5 years">
-</div>
-<div class="form-group">
-    <label for="candidateRequirements.requiredSkills">Required Skills:</label>
-    <textarea name="candidateRequirements.requiredSkills" id="candidateRequirements.requiredSkills" rows="3" placeholder="JavaScript, React, Node.js, AWS..."></textarea>
-</div>
+            <h3>Candidate Requirements</h3>
+            <div class="form-group">
+                <label for="candidateRequirements.requiredEducationLevel">Required Education:</label>
+                <input type="text" name="candidateRequirements.requiredEducationLevel" id="candidateRequirements.requiredEducationLevel" placeholder="Bachelor's Degree in Computer Science">
+            </div>
+            <div class="form-group">
+                <label for="candidateRequirements.requiredFieldOfStudy">Field of Study:</label>
+                <input type="text" name="candidateRequirements.requiredFieldOfStudy" id="candidateRequirements.requiredFieldOfStudy" placeholder="Computer Science, Software Engineering">
+            </div>
+            <div class="form-group">
+                <label for="candidateRequirements.requiredYearsOfExperience">Years of Experience:</label>
+                <input type="text" name="candidateRequirements.requiredYearsOfExperience" id="candidateRequirements.requiredYearsOfExperience" placeholder="3-5 years">
+            </div>
+            <div class="form-group">
+                <label for="candidateRequirements.requiredSkills">Required Skills:</label>
+                <textarea name="candidateRequirements.requiredSkills" id="candidateRequirements.requiredSkills" rows="3" placeholder="JavaScript, React, Node.js, AWS..."></textarea>
+            </div>
+
             <div class="form-group">
                 <label for="jobIdentification.referenceID">Reference ID:</label>
                 <input type="text" name="jobIdentification.referenceID" id="jobIdentification.referenceID">
@@ -263,10 +264,6 @@
                 <label for="companyInformation.companySize">Company Size:</label>
                 <input type="text" name="companyInformation.companySize" id="companyInformation.companySize">
             </div>
-            <div class="form-group">
-                <label for="companyInformation.industrySector">Industry Sector:</label>
-                <input type="text" name="companyInformation.industrySector" id="companyInformation.industrySector">
-            </div>
 
             <h3>Position Details</h3>
             <div class="form-group">
@@ -276,24 +273,6 @@
             <div class="form-group">
                 <label for="positionDetails.keyResponsibilities">Key Responsibilities:</label>
                 <textarea name="positionDetails.keyResponsibilities" id="positionDetails.keyResponsibilities" rows="4"></textarea>
-            </div>
-
-            <h3>Candidate Requirements</h3>
-            <div class="form-group">
-                <label for="candidateRequirements.requiredEducationLevel">Required Education:</label>
-                <input type="text" name="candidateRequirements.requiredEducationLevel" id="candidateRequirements.requiredEducationLevel">
-            </div>
-            <div class="form-group">
-                <label for="candidateRequirements.requiredFieldOfStudy">Field of Study:</label>
-                <input type="text" name="candidateRequirements.requiredFieldOfStudy" id="candidateRequirements.requiredFieldOfStudy">
-            </div>
-            <div class="form-group">
-                <label for="candidateRequirements.requiredYearsOfExperience">Years of Experience:</label>
-                <input type="number" name="candidateRequirements.requiredYearsOfExperience" id="candidateRequirements.requiredYearsOfExperience">
-            </div>
-            <div class="form-group">
-                <label for="candidateRequirements.requiredSkills">Required Skills:</label>
-                <textarea name="candidateRequirements.requiredSkills" id="candidateRequirements.requiredSkills" rows="3"></textarea>
             </div>
 
             <h3>Compensation & Benefits</h3>
@@ -311,9 +290,9 @@
             </div>
         </form>
         <div class="action-buttons">
-            <button type="button" onclick="saveFormData('job')">Save Job Data</button>
-            <button type="button" class="btn-danger" onclick="resetForm('job')">Clear Job</button>
-            <button type="button" onclick="importProject()">Import Project from JSON</button>
+            <button type="button" >Save Job Data</button>
+            <button type="button" class="btn-danger" >Clear Job</button>
+            <button type="button" >Import Project from JSON</button>
         </div>
     </div>
 
@@ -335,12 +314,17 @@
 
             // --- Sanitization & Validation Utilities ---
             const SecurityUtils = {
-                sanitizeForDOM: (str) => {
-                    if (typeof str !== 'string') return '';
-                    const div = document.createElement('div');
-                    div.textContent = str;
-                    return div.innerHTML;
-                },
+    sanitizeForDOM: (str) => {
+        if (typeof str !== 'string') return '';
+        // Proper HTML escaping
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#x27;')
+            .replace(/\//g, '&#x2F;');
+    },
                 sanitizeErrorMessage: (msg) => {
                     if (typeof msg !== 'string') return 'An unknown error occurred';
                     return msg.replace(/\(.*?\)|\[.*?\]/g, '').substring(0, 200);
@@ -434,16 +418,16 @@
                             <input type="text" name="languages.${index}.proficiency" placeholder="Proficiency (e.g., Native, Fluent)">
                         </div>`,
                     experience: (index) => `
-    <div class="dynamic-item" data-type="experience">
-        <h4>Experience ${index + 1}</h4>
-        <input type="text" name="experience.${index}.jobTitle" placeholder="Job Title" required>
-        <input type="text" name="experience.${index}.companyName" placeholder="Company Name" required>
-        <input type="text" name="experience.${index}.employmentDates" placeholder="e.g., Jan 2020 - Dec 2022">
-        <input type="text" name="experience.${index}.location" placeholder="Location">
-        <textarea name="experience.${index}.jobDescription" rows="3" placeholder="Job Description (paragraph format)"></textarea>
-        <textarea name="experience.${index}.keyResponsibilities" rows="2" placeholder="Key Responsibilities (bullet points)"></textarea>
-        <textarea name="experience.${index}.keyAchievements" rows="2" placeholder="Key Achievements (quantified results)"></textarea>
-    </div>`,
+                        <div class="dynamic-item" data-type="experience">
+                            <h4>Experience ${index + 1}</h4>
+                            <input type="text" name="experience.${index}.jobTitle" placeholder="Job Title" required>
+                            <input type="text" name="experience.${index}.companyName" placeholder="Company Name" required>
+                            <input type="text" name="experience.${index}.employmentDates" placeholder="e.g., Jan 2020 - Dec 2022">
+                            <input type="text" name="experience.${index}.location" placeholder="Location">
+                            <textarea name="experience.${index}.jobDescription" rows="3" placeholder="Job Description (paragraph format)"></textarea>
+                            <textarea name="experience.${index}.keyResponsibilities" rows="2" placeholder="Key Responsibilities (bullet points)"></textarea>
+                            <textarea name="experience.${index}.keyAchievements" rows="2" placeholder="Key Achievements (quantified results)"></textarea>
+                        </div>`,
                     education: (index) => `
                         <div class="dynamic-item" data-type="education">
                             <h4>Education ${index + 1}</h4>
@@ -709,6 +693,29 @@
                         throw new Error('Invalid response format from server');
                     }
 
+                    // === COMPREHENSIVE QUALITY CHECK ===
+                    function validateAIOutput(result) {
+                        const summary = result.cvData?.personalInfo?.summary || '';
+                        
+                        const garbagePatterns = [
+                            'is about at', 'is short at', 'Lantz', 'Lamis is short at',
+                            'undefined', 'null', '[object Object]', '...', 'etc etc'
+                        ];
+                        
+                        if (garbagePatterns.some(pattern => summary.includes(pattern))) {
+                            throw new Error('AI generated low-quality content. Please try again.');
+                        }
+                        
+                        if (summary.length < 50 || summary.split('. ').length < 2) {
+                            throw new Error('Summary appears incomplete. Please try again.');
+                        }
+                        
+                        return true;
+                    }
+
+                    validateAIOutput(result);
+
+                    // === ONLY POPULATE IF QUALITY CHECK PASSES ===
                     FormSerializer.populate('cvTemplateForm', result.cvData || {});
                     FormSerializer.populate('jobTemplateForm', result.jobData || {});
 
@@ -807,26 +814,53 @@
                     UI.showMessage('Loaded previously saved data from this browser.');
                 }
 
-                document.getElementById('cvFileInput').addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        this.click();
-                    }
-                });
+                            document.getElementById('cvFileInput').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.click();
+                }
             });
 
-            // --- Expose functions to global scope ---
-            window.handleCVProcess = handleCVProcess;
-            window.saveFormData = saveFormData;
-            window.resetForm = resetForm;
-            window.addCertification = () => DynamicFields.add('certificationsContainer', 'certification');
-            window.addLanguage = () => DynamicFields.add('languagesContainer', 'language');
-            window.addExperience = () => DynamicFields.add('experienceContainer', 'experience');
-            window.addEducation = () => DynamicFields.add('educationContainer', 'education');
-            window.addProject = () => DynamicFields.add('projectsContainer', 'project');
-            window.exportProject = ProjectManager.exportProject;
-            window.importProject = ProjectManager.importProject;
+            // === ADD EVENT LISTENER SETUP HERE ===
+            document.getElementById('processBtn')?.addEventListener('click', handleCVProcess);
+            
+            // CV Template buttons
+            const cvActionButtons = document.querySelector('#cvTemplateSection .action-buttons');
+            if (cvActionButtons) {
+                cvActionButtons.querySelector('button:nth-child(1)')?.addEventListener('click', () => saveFormData('cv'));
+                cvActionButtons.querySelector('button:nth-child(2)')?.addEventListener('click', () => resetForm('cv'));
+                cvActionButtons.querySelector('button:nth-child(3)')?.addEventListener('click', exportProject);
+            }
+            
+            // Job Template buttons  
+            const jobActionButtons = document.querySelector('#jobTemplateSection .action-buttons');
+            if (jobActionButtons) {
+                jobActionButtons.querySelector('button:nth-child(1)')?.addEventListener('click', () => saveFormData('job'));
+                jobActionButtons.querySelector('button:nth-child(2)')?.addEventListener('click', () => resetForm('job'));
+                jobActionButtons.querySelector('button:nth-child(3)')?.addEventListener('click', importProject);
+            }
+            
+            // Dynamic field buttons
+            document.querySelector('button[class*="add-btn"]:has(+ #certificationsContainer)')?.addEventListener('click', addCertification);
+            document.querySelector('button[class*="add-btn"]:has(+ #languagesContainer)')?.addEventListener('click', addLanguage);
+            document.querySelector('button[class*="add-btn"]:has(+ #experienceContainer)')?.addEventListener('click', addExperience);
+            document.querySelector('button[class*="add-btn"]:has(+ #educationContainer)')?.addEventListener('click', addEducation);
+            document.querySelector('button[class*="add-btn"]:has(+ #projectsContainer)')?.addEventListener('click', addProject);
+        }); // ← KEEP THIS CLOSING BRACE FOR DOMContentLoaded
 
+        // --- Expose functions to global scope ---
+        window.handleCVProcess = handleCVProcess;
+        window.saveFormData = saveFormData;
+        window.resetForm = resetForm;
+        window.addCertification = () => DynamicFields.add('certificationsContainer', 'certification');
+        window.addLanguage = () => DynamicFields.add('languagesContainer', 'language');
+        window.addExperience = () => DynamicFields.add('experienceContainer', 'experience');
+        window.addEducation = () => DynamicFields.add('educationContainer', 'education');
+        window.addProject = () => DynamicFields.add('projectsContainer', 'project');
+        window.exportProject = ProjectManager.exportProject;
+        window.importProject = ProjectManager.importProject;
+
+     
         })();
     </script>
 </body>
