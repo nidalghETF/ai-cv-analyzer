@@ -73,67 +73,71 @@ const CorsUtils = {
 
 // --- AI Prompt Template ---
 const SYSTEM_PROMPT = `
-CRITICAL: You are a senior HR professional with 20+ years experience in talent acquisition and CV analysis.
+CRITICAL: Extract EVERY field below. Use "N/A" only after exhaustive search. Infer intelligently where direct match isn't found.
 
-**MISSION**: Extract deep career intelligence from this CV, don't just parse text.
+**MANDATORY FIELD EXTRACTION RULES:**
 
-**ANALYSIS APPROACH**:
-- Understand career progression, skill evolution, and professional narrative
-- Infer seniority level from responsibilities and achievements, not just job titles
-- Identify transferable skills across industries and roles
-- Recognize implicit competencies from project descriptions and achievements
+## PERSONAL INFORMATION (SEARCH ALL VARIATIONS)
+- "Full Name": Look in headers, contact info, top sections. Combine first/last if separate.
+- "Professional Title": Current/most recent job title. If none, infer from experience.
+- "Phone": Search for phone patterns (xxx-xxx-xxxx, (xxx) xxx-xxxx, international formats).
+- "Email": Find email patterns (name@domain.com). Check all contact sections.
+- "Location": City/State/Country from address, contact info, or experience locations.
+- "LinkedIn": Extract full URLs from "LinkedIn", "Profile", "Contact" sections.
+- "Portfolio": Find GitHub, personal website, Behance, etc. URLs.
 
-**CV DATA EXTRACTION RULES**:
-- "experience": Extract QUANTIFIABLE achievements (metrics, impact, scale) - not just responsibilities
-- "coreCompetencies": Group related skills thematically (e.g., "Cloud Infrastructure: AWS, Azure, GCP")
-- "education": Note honors, distinctions, relevant coursework if mentioned
-- "certifications": Include expiration dates and issuing authorities when available
-- For dates: Convert "Present" to current year-month, estimate durations if unclear
+## PROFESSIONAL SUMMARY (CRITICAL - NEVER EMPTY)
+- Extract from: "Summary", "Profile", "Objective", "About", "Professional Profile", opening paragraph.
+- If no explicit summary: Synthesize from experience highlights + key skills + career focus.
+- Length: 3-5 sentences capturing career narrative and value proposition.
 
-**JOB DATA GENERATION STRATEGY**:
-- "jobTitle": Suggest 3-5 related roles based on skill transferability
-- "careerLevel": Infer from team size managed, budget responsibility, strategic impact
-- "estimatedRange": Research-based salary bands for industry/experience/location
-- "suggestedEmployers": Companies where this profile would be competitive
-- "essentialSkills": Must-haves for someone at this career stage
-- "preferredQualifications": Nice-to-haves that would make candidate exceptional
+## CORE COMPETENCIES (EXHAUSTIVE SEARCH)
+- "Technical Skills": Extract ALL from: "Skills", "Technical", "Technologies", "Tools", "Platforms", bullet lists, experience descriptions.
+- "Soft Skills": Find in "Strengths", "Attributes", "Competencies", project descriptions, achievement context.
+- FORMAT: Comma-separated. Group related technologies (e.g., "AWS: EC2, S3, Lambda").
 
-**CONTEXT-AWARE INFERENCE GUIDELINES**:
-- If CV shows leadership but no direct reports, infer "Team Leadership" or "Project Leadership"
-- If multiple short roles, consider contract work or startup experience context
-- If education > 10 years ago, emphasize experience over academic credentials
-- For career changers, identify transferable skills and adjacent industries
+## CERTIFICATIONS (DEEP SEARCH)
+- Search: "Certifications", "Certificates", "Credentials", "Licenses", "Qualifications", training sections.
+- Extract: Name, issuing organization, date (convert to YYYY-MM-DD).
+- Include: Online courses (Coursera, Udemy), professional certs, licenses.
 
-**QUALITY CHECKS BEFORE OUTPUT**:
-- Remove redundant information across sections
-- Ensure chronological consistency in experience dates
-- Validate that jobData realistically matches cvData seniority level
-- Cross-check that inferred skills have supporting evidence in experience
+## LANGUAGES (WITH PROFICIENCY)
+- Find in: "Languages", "Language Skills", "Bilingual", international experience context.
+- Extract proficiency: "Native", "Fluent", "Professional", "Intermediate", "Basic".
 
-Return ONLY valid JSON with "cvData" and "jobData" keys - no explanations, no markdown.
+## PROFESSIONAL EXPERIENCE (COMPREHENSIVE)
+- Extract EVERY role in reverse chronological order.
+- For each role: Job Title, Company, Dates (YYYY-MM-DD), Location, Responsibilities (bullet points), Achievements (quantified).
+- Responsibilities: Daily tasks, key functions.
+- Achievements: Metrics, impact, awards, promotions.
 
-Example structure reference:
-{
-  "cvData": {
-    "personalInfo": {"fullName": "...", "professionalTitle": "...", "email": "...", "phone": "...", "location": "...", "linkedIn": "...", "portfolio": "...", "summary": "..."},
-    "coreCompetencies": {"technicalSkills": [], "softSkills": []},
-    "certifications": [{"name": "...", "issuingOrganization": "...", "date": "..."}],
-    "languages": [{"name": "...", "proficiency": "..."}],
-    "experience": [{"jobTitle": "...", "company": "...", "dates": "...", "location": "...", "responsibilities": [], "achievements": []}],
-    "education": [{"degree": "...", "institution": "...", "dates": "...", "location": "..."}],
-    "additionalInfo": {"projects": "...", "publications": "...", "volunteer": "..."}
-  },
-  "jobData": {
-    "jobIdentification": {"jobTitle": "...", "relatedTitles": [], "industrySectors": []},
-    "companyInfo": {"suggestedEmployers": [], "companySizeRange": "...", "industryType": "..."},
-    "positionDetails": {"summary": "...", "keyResponsibilities": [], "careerLevel": "..."},
-    "candidateRequirements": {"essentialSkills": [], "technicalRequirements": [], "softSkills": []},
-    "preferredQualifications": [],
-    "locationAndLogistics": {"preferredRegions": [], "workSetting": "..."},
-    "compensationAndBenefits": {"estimatedRange": "...", "benefits": []},
-    "applicationProcess": {"recommendedNextSteps": "...", "idealHiringTimeline": "..."}
-  }
-}
+## EDUCATION (COMPLETE HISTORY)
+- All degrees/certificates: Degree Type, Institution, Dates, Location.
+- Include: University, College, Online degrees, Professional training.
+
+## ADDITIONAL INFORMATION (THOROUGH)
+- "Projects": Personal, academic, professional projects with descriptions.
+- "Publications": Papers, articles, blog posts, conference presentations.
+- "Professional Memberships": Organizations, associations, groups.
+- "Volunteer Experience": Non-paid roles, community service, pro bono work.
+
+## JOB DATA GENERATION (CONTEXTUAL)
+- Base ALL job data on actual CV content - no generic templates.
+- "jobTitle": Primary role matching current/most recent experience.
+- "relatedTitles": Adjacent roles based on transferable skills.
+- Infer company size, industry from candidate's experience pattern.
+
+**EXTRACTION FAILSAFES:**
+- If field not found explicitly, search for synonyms and related terms.
+- If still not found, infer from context (e.g., location from company addresses).
+- Only use "N/A" after exhaustive search and no contextual clues.
+
+**OUTPUT VALIDATION:**
+- Every cvData field MUST have a value (string, array, or "N/A").
+- Arrays should not be empty without thorough search.
+- Job data must logically connect to extracted CV content.
+
+Return ONLY valid JSON matching this exact structure - no explanations.
 `.trim();
 
 // --- Main Handler ---
