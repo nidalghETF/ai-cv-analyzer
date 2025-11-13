@@ -645,62 +645,62 @@ serialize: (form) => {
             };
 
             // --- Main Processing Logic ---
-            async function handleCVProcess() {
-                const fileInput = document.getElementById('cvFileInput');
-                const file = fileInput.files[0];
+async function handleCVProcess() {
+    const fileInput = document.getElementById('cvFileInput');
+    const file = fileInput.files[0];
 
-                try {
-                    SecurityUtils.validateFile(file);
+    try {
+        SecurityUtils.validateFile(file);
 
-                    const hasExistingData = StorageUtils.load('cv') || StorageUtils.load('job');
-                    if (hasExistingData && !confirm('This will replace existing data. Continue?')) {
-                        return;
-                    }
+        const hasExistingData = StorageUtils.load('cv') || StorageUtils.load('job');
+        if (hasExistingData && !confirm('This will replace existing data. Continue?')) {
+            return;
+        }
 
-                    UI.hideMessage();
-                    UI.setProcessingState(true);
-                    UI.showMessage('Processing CV... Please wait.');
+        UI.hideMessage();
+        UI.setProcessingState(true);
+        UI.showMessage('Processing CV... Please wait.');
 
-                    const arrayBuffer = await file.arrayBuffer();
-                    const base64String = arrayBufferToBase64(arrayBuffer);
+        const arrayBuffer = await file.arrayBuffer();
+        const base64String = arrayBufferToBase64(arrayBuffer);
 
-                    const response = await fetch(CONFIG.BACKEND_API_ENDPOINT, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        body: JSON.stringify({ 
-                            pdfBase64: base64String,
-                        })
-                    });
+        const response = await fetch(CONFIG.BACKEND_API_ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ 
+                pdfBase64: base64String,
+            })
+        });
 
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({}));
-                        throw new Error(errorData.message || `Backend error: ${response.status}`);
-                    }
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `Backend error: ${response.status}`);
+        }
 
-                    const result = await response.json();
+        const result = await response.json();
 
-                    if (!result || typeof result !== 'object') {
-                        throw new Error('Invalid response format from server');
-                    }
+        if (!result || typeof result !== 'object') {
+            throw new Error('Invalid response format from server');
+        }
 
-                    FormSerializer.populate('cvTemplateForm', result.cvData || {});
-                    FormSerializer.populate('jobTemplateForm', result.jobData || {});
+        FormSerializer.populate('cvTemplateForm', result.cvData || {});
+        FormSerializer.populate('jobTemplateForm', result.jobData || {});
 
-                    document.getElementById('cvTemplateSection').style.display = 'block';
-                    document.getElementById('jobTemplateSection').style.display = 'block';
-                    document.getElementById('uploadSection').style.display = 'none';
+        document.getElementById('cvTemplateSection').style.display = 'block';
+        document.getElementById('jobTemplateSection').style.display = 'block';
+        document.getElementById('uploadSection').style.display = 'none';
 
-                    UI.showMessage('CV analyzed successfully! Please review and edit the templates.');
-                } catch (error) {
-                    console.error('Processing error:', error);
-                    UI.showMessage(`Error: ${SecurityUtils.sanitizeErrorMessage(error.message)}`, true);
-                } finally {
-                    UI.setProcessingState(false);
-                }
-            }
+        UI.showMessage('CV analyzed successfully! Please review and edit the templates.');
+    } catch (error) {
+        console.error('Processing error:', error);
+        UI.showMessage(`Error: ${SecurityUtils.sanitizeErrorMessage(error.message)}`, true);
+    } finally {
+        UI.setProcessingState(false);
+    }
+}
 
             function arrayBufferToBase64(buffer) {
                 const bytes = new Uint8Array(buffer);
