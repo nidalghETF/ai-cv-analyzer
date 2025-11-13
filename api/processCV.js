@@ -8,7 +8,13 @@ const CONFIG = {
   TIMEOUT_MS: 60000
 };
 
-const SYSTEM_PROMPT = `Extract CV data into this exact JSON structure. CREATE DYNAMIC ARRAYS for multi-item sections.
+const SYSTEM_PROMPT = `Extract CV data into this exact JSON structure. CREATE PROFESSIONAL SUMMARY and DYNAMIC ARRAYS.
+
+**PROFESSIONAL SUMMARY REQUIREMENT:**
+- MUST create 3-4 sentence professional summary from entire CV
+- Synthesize from: career highlights, key skills, major achievements, career trajectory
+- Make it compelling and professional - not just concatenated text
+- NEVER leave empty - create from experience if no explicit summary exists
 
 {
   "cvData": {
@@ -20,7 +26,7 @@ const SYSTEM_PROMPT = `Extract CV data into this exact JSON structure. CREATE DY
       "location": "city/state from address",
       "linkedIn": "linkedin url if present",
       "portfolio": "portfolio/github url if present",
-      "summary": "CREATE PROFESSIONAL 3-4 SENTENCE SUMMARY from entire CV"
+      "summary": "CREATE COMPELLING PROFESSIONAL SUMMARY HERE"
     },
     "coreCompetencies": {
       "technicalSkills": "extract all technical skills/tools as comma list",
@@ -51,7 +57,7 @@ const SYSTEM_PROMPT = `Extract CV data into this exact JSON structure. CREATE DY
       }
     ],
     "additionalInfo": {
-      "projects": "extract project descriptions",
+      "projects": "EXTRACT AS ARRAY OF PROJECT OBJECTS - NOT FLAT TEXT",
       "publications": "extract publications/research", 
       "professionalMemberships": "extract organizations",
       "volunteerExperience": "extract volunteer work"
@@ -66,13 +72,11 @@ const SYSTEM_PROMPT = `Extract CV data into this exact JSON structure. CREATE DY
   }
 }
 
-**DYNAMIC FIELD RULES:**
-- "certifications", "languages", "experience", "education" are ARRAYS
-- Fill arrays with ALL items found in CV
-- Create professional summary from career highlights
-- For empty arrays, use [] not null
-
-CRITICAL: Return ONLY valid JSON. No explanations, no markdown.`;
+**CRITICAL RULES:**
+- "summary" field MUST contain AI-generated professional summary
+- "projects" should be structured objects, not flat text
+- Fill ALL arrays with actual data from CV
+- Return ONLY valid JSON`;
 
 let genAI, model;
 

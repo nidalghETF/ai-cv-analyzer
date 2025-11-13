@@ -179,15 +179,15 @@
             <div id="educationContainer" class="dynamic-container"></div>
             <button type="button" class="btn-secondary add-btn" onclick="addEducation()">+ Add Education</button>
 
-            <h3>Additional Information</h3>
-            <div class="form-group">
-                <label for="additionalInfo.projects">Projects:</label>
-                <textarea name="additionalInfo.projects" id="additionalInfo.projects" rows="3"></textarea>
-            </div>
-            <div class="form-group">
-                <label for="additionalInfo.publications">Publications:</label>
-                <textarea name="additionalInfo.publications" id="additionalInfo.publications" rows="3"></textarea>
-            </div>
+            <h3>Projects</h3>
+<div id="projectsContainer" class="dynamic-container"></div>
+<button type="button" class="btn-secondary add-btn" onclick="addProject()">+ Add Project</button>
+
+<h3>Additional Information</h3>
+<div class="form-group">
+    <label for="additionalInfo.publications">Publications:</label>
+    <textarea name="additionalInfo.publications" id="additionalInfo.publications" rows="3"></textarea>
+</div>
             <div class="form-group">
                 <label for="additionalInfo.professionalMemberships">Professional Memberships:</label>
                 <textarea name="additionalInfo.professionalMemberships" id="additionalInfo.professionalMemberships" rows="3"></textarea>
@@ -398,14 +398,26 @@
             };
 
             // --- Dynamic Field Management ---
-            const DynamicFields = {
-                templates: {
-                    certification: (index) => `
-                        <div class="dynamic-item" data-type="certification">
-                            <input type="text" name="certifications.${index}.name" placeholder="Certification Name" required>
-                            <input type="text" name="certifications.${index}.issuingOrganization" placeholder="Issuing Organization">
-                            <input type="date" name="certifications.${index}.date" placeholder="Date (YYYY-MM-DD)">
-                        </div>`,
+               education: (index) => `
+        <div class="dynamic-item" data-type="education">
+          <h4>Education ${index + 1}</h4>
+          <input type="text" name="education.${index}.degree" placeholder="Degree/Qualification" required>
+          <input type="text" name="education.${index}.institutionName" placeholder="Institution Name" required>
+          <input type="text" name="education.${index}.completionDate" placeholder="e.g., 2022">
+          <input type="text" name="education.${index}.location" placeholder="Location">
+        </div>`,
+    // ▼▼▼ ADD THIS PROJECT TEMPLATE ▼▼▼
+    project: (index) => `
+        <div class="dynamic-item" data-type="project">
+          <h4>Project ${index + 1}</h4>
+          <input type="text" name="projects.${index}.title" placeholder="Project Title" required>
+          <input type="text" name="projects.${index}.description" placeholder="Project Description">
+          <input type="text" name="projects.${index}.technologies" placeholder="Technologies Used">
+          <input type="text" name="projects.${index}.dates" placeholder="Project Dates">
+          <input type="text" name="projects.${index}.url" placeholder="Project URL/Link">
+        </div>`
+    // ▲▲▲ END OF ADDED TEMPLATE ▲▲▲
+  },
                     language: (index) => `
                         <div class="dynamic-item" data-type="language">
                             <input type="text" name="languages.${index}.name" placeholder="Language Name" required>
@@ -452,23 +464,25 @@ const FormSerializer = {
     if (!data || !form) return;
 
     // Clear existing dynamic fields
-    ['certificationsContainer', 'languagesContainer', 'experienceContainer', 'educationContainer'].forEach(id => {
+    ['certificationsContainer', 'languagesContainer', 'experienceContainer', 'educationContainer', 'projectsContainer'].forEach(id => {
       FormUtils.clearDynamicContainer(id);
     });
 
-    // AUTO-CREATE DYNAMIC FIELDS BASED ON AI DATA
-    const autoCreateFields = {
-      certifications: data.certifications?.length || 0,
-      languages: data.languages?.length || 0,
-      experience: data.experience?.length || 0,
-      education: data.education?.length || 0
+    // PRE-CREATE 3 DEFAULT FIELDS + AI-DETECTED FIELDS
+    const fieldCreation = {
+      certifications: Math.max(data.certifications?.length || 0, 3),
+      languages: Math.max(data.languages?.length || 0, 3),
+      experience: Math.max(data.experience?.length || 0, 3),
+      education: Math.max(data.education?.length || 0, 3),
+      projects: Math.max(data.projects?.length || 0, 3)
     };
 
-    // Create fields for each item found by AI
-    for (let i = 0; i < autoCreateFields.certifications; i++) DynamicFields.add('certificationsContainer', 'certification');
-    for (let i = 0; i < autoCreateFields.languages; i++) DynamicFields.add('languagesContainer', 'language');
-    for (let i = 0; i < autoCreateFields.experience; i++) DynamicFields.add('experienceContainer', 'experience');
-    for (let i = 0; i < autoCreateFields.education; i++) DynamicFields.add('educationContainer', 'education');
+    // Create fields (minimum 3 of each type)
+    for (let i = 0; i < fieldCreation.certifications; i++) DynamicFields.add('certificationsContainer', 'certification');
+    for (let i = 0; i < fieldCreation.languages; i++) DynamicFields.add('languagesContainer', 'language');
+    for (let i = 0; i < fieldCreation.experience; i++) DynamicFields.add('experienceContainer', 'experience');
+    for (let i = 0; i < fieldCreation.education; i++) DynamicFields.add('educationContainer', 'education');
+    for (let i = 0; i < fieldCreation.projects; i++) DynamicFields.add('projectsContainer', 'project');
 
     // Set values after DOM is populated
     setTimeout(() => {
@@ -786,10 +800,7 @@ serialize: (form) => {
             window.handleCVProcess = handleCVProcess;
             window.saveFormData = saveFormData;
             window.resetForm = resetForm;
-            window.addCertification = () => DynamicFields.add('certificationsContainer', 'certification');
-            window.addLanguage = () => DynamicFields.add('languagesContainer', 'language');
-            window.addExperience = () => DynamicFields.add('experienceContainer', 'experience');
-            window.addEducation = () => DynamicFields.add('educationContainer', 'education');
+            window.addProject = () => DynamicFields.add('projectsContainer', 'project');
             window.exportProject = ProjectManager.exportProject;
             window.importProject = ProjectManager.importProject;
 
