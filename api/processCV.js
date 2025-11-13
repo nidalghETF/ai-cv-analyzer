@@ -64,15 +64,25 @@ PROFESSIONAL SUMMARY REQUIREMENT:
       "volunteerExperience": "extract volunteer work"
     }
   },
-  "jobData": {
-    "jobIdentification": {"jobTitle": "CREATE BASED ON EXPERIENCE"},
-    "companyInfo": {"industryType": "inferred from background"},
-    "positionDetails": {"summary": "CREATE JOB DESCRIPTION"},
-    "candidateRequirements": {"essentialSkills": "from cv skills"},
-    "compensationAndBenefits": {"estimatedRange": "industry standard"}
-  }
+ "jobData": {
+    "jobIdentification": {
+        "jobTitles": "GENERATE 3-5 SPECIFIC JOB TITLES that match the CV experience. Consider: current trends, career progression, and skill alignment. Be precise - not generic."
+    },
+    "companyInformation": {
+        "industryOptions": "GENERATE 2-3 INDUSTRY OPTIONS that align with experience. Consider both obvious and adjacent industries."
+    },
+    "candidateRequirements": {
+        "educationOptions": "DETERMINE MINIMUM REQUIRED EDUCATION based on roles held and industry standards",
+        "fieldStudyOptions": "SUGGEST 2-3 RELEVANT FIELDS OF STUDY that would qualify for these roles", 
+        "experienceRange": "CALCULATE ACTUAL YEARS from work history and suggest industry standard range"
+    }
 }
 
+CRITICAL RULES:
+- summary field MUST contain AI-generated professional summary
+- projects should be structured objects, not flat text
+- Fill ALL arrays with actual data from CV
+- Return ONLY valid JSON
 CRITICAL RULES:
 - summary field MUST contain AI-generated professional summary
 - projects should be structured objects, not flat text

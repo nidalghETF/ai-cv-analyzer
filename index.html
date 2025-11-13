@@ -207,11 +207,32 @@
     <div id="jobTemplateSection" class="template-section" style="display: none;">
         <h2>AI-Generated Job Questionnaire (Editable)</h2>
         <form id="jobTemplateForm">
-            <h3>Job Identification</h3>
-            <div class="form-group">
-                <label for="jobIdentification.jobTitle">Job Title:</label>
-                <input type="text" name="jobIdentification.jobTitle" id="jobIdentification.jobTitle">
-            </div>
+            <h3>Job Targeting Strategy</h3>
+<div class="form-group">
+    <label for="jobIdentification.jobTitles">Recommended Job Titles (AI Suggestions):</label>
+    <textarea name="jobIdentification.jobTitles" id="jobIdentification.jobTitles" rows="3" placeholder="AI will generate 3-5 targeted job titles based on your CV"></textarea>
+    <small style="color: #6b7280; font-size: 12px;">Select the most relevant titles for your job search</small>
+</div>
+
+<div class="form-group">
+    <label for="companyInformation.industryOptions">Industry Sector Options:</label>
+    <textarea name="companyInformation.industryOptions" id="companyInformation.industryOptions" rows="2" placeholder="AI will suggest relevant industries"></textarea>
+</div>
+
+<div class="form-group">
+    <label for="candidateRequirements.educationOptions">Required Education Level:</label>
+    <input type="text" name="candidateRequirements.educationOptions" id="candidateRequirements.educationOptions" placeholder="AI will determine minimum requirements">
+</div>
+
+<div class="form-group">
+    <label for="candidateRequirements.fieldStudyOptions">Relevant Fields of Study:</label>
+    <input type="text" name="candidateRequirements.fieldStudyOptions" id="candidateRequirements.fieldStudyOptions" placeholder="AI will suggest qualifying fields">
+</div>
+
+<div class="form-group">
+    <label for="candidateRequirements.experienceRange">Years of Experience Range:</label>
+    <input type="text" name="candidateRequirements.experienceRange" id="candidateRequirements.experienceRange" placeholder="AI will calculate your experience level">
+</div>
             <div class="form-group">
                 <label for="jobIdentification.referenceID">Reference ID:</label>
                 <input type="text" name="jobIdentification.referenceID" id="jobIdentification.referenceID">
