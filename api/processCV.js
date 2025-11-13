@@ -66,17 +66,33 @@ PROFESSIONAL SUMMARY REQUIREMENT:
   },
  "jobData": {
     "jobIdentification": {
-        "jobTitles": "GENERATE 3-5 SPECIFIC JOB TITLES that match the CV experience. Consider: current trends, career progression, and skill alignment. Be precise - not generic."
+        "jobTitles": "EXTRACT 3-5 SPECIFIC JOB TITLES"
     },
     "companyInformation": {
-        "industryOptions": "GENERATE 2-3 INDUSTRY OPTIONS that align with experience. Consider both obvious and adjacent industries."
+        "industrySector": "EXTRACT RELEVANT INDUSTRIES"
     },
     "candidateRequirements": {
-        "educationOptions": "DETERMINE MINIMUM REQUIRED EDUCATION based on roles held and industry standards",
-        "fieldStudyOptions": "SUGGEST 2-3 RELEVANT FIELDS OF STUDY that would qualify for these roles", 
-        "experienceRange": "CALCULATE ACTUAL YEARS from work history and suggest industry standard range"
+        "requiredEducationLevel": "DETERMINE EDUCATION REQUIREMENTS",
+        "requiredFieldOfStudy": "IDENTIFY RELEVANT FIELDS", 
+        "requiredYearsOfExperience": "CALCULATE EXPERIENCE RANGE",
+        "requiredSkills": "EXTRACT ESSENTIAL SKILLS"
     }
 }
+JOB DATA GENERATION RULES:
+- jobTitles: Generate 3-5 ACTUAL job titles separated by commas based on CV experience
+- industrySector: Suggest 2-3 ACTUAL industries that match the career background  
+- requiredEducationLevel: Determine the ACTUAL minimum education required for these roles
+- requiredFieldOfStudy: Suggest 2-3 ACTUAL relevant academic fields
+- requiredYearsOfExperience: Calculate ACTUAL experience range like "3-5 years" or "5-8 years"
+- requiredSkills: Extract ACTUAL essential skills from the CV competencies
+
+EXAMPLE OUTPUT:
+"jobTitles": "Senior Frontend Developer, Full Stack Engineer, React Specialist",
+"industrySector": "Technology, FinTech", 
+"requiredEducationLevel": "Bachelor's Degree",
+"requiredFieldOfStudy": "Computer Science, Software Engineering",
+"requiredYearsOfExperience": "4-6 years",
+"requiredSkills": "JavaScript, React, Node.js, AWS, Agile Methodology"
 
 CRITICAL RULES:
 - summary field MUST contain AI-generated professional summary

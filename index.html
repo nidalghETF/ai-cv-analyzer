@@ -209,29 +209,31 @@
         <form id="jobTemplateForm">
             <h3>Job Targeting Strategy</h3>
 <div class="form-group">
-    <label for="jobIdentification.jobTitles">Recommended Job Titles (AI Suggestions):</label>
-    <textarea name="jobIdentification.jobTitles" id="jobIdentification.jobTitles" rows="3" placeholder="AI will generate 3-5 targeted job titles based on your CV"></textarea>
-    <small style="color: #6b7280; font-size: 12px;">Select the most relevant titles for your job search</small>
+    <label for="jobIdentification.jobTitles">Recommended Job Titles:</label>
+    <textarea name="jobIdentification.jobTitles" id="jobIdentification.jobTitles" rows="3" placeholder="Senior Frontend Developer, Full Stack Engineer, React Specialist..."></textarea>
 </div>
 
 <div class="form-group">
-    <label for="companyInformation.industryOptions">Industry Sector Options:</label>
-    <textarea name="companyInformation.industryOptions" id="companyInformation.industryOptions" rows="2" placeholder="AI will suggest relevant industries"></textarea>
+    <label for="companyInformation.industrySector">Industry Sector:</label>
+    <input type="text" name="companyInformation.industrySector" id="companyInformation.industrySector" placeholder="Technology, FinTech, E-commerce...">
 </div>
 
+<h3>Candidate Requirements</h3>
 <div class="form-group">
-    <label for="candidateRequirements.educationOptions">Required Education Level:</label>
-    <input type="text" name="candidateRequirements.educationOptions" id="candidateRequirements.educationOptions" placeholder="AI will determine minimum requirements">
+    <label for="candidateRequirements.requiredEducationLevel">Required Education:</label>
+    <input type="text" name="candidateRequirements.requiredEducationLevel" id="candidateRequirements.requiredEducationLevel" placeholder="Bachelor's Degree in Computer Science">
 </div>
-
 <div class="form-group">
-    <label for="candidateRequirements.fieldStudyOptions">Relevant Fields of Study:</label>
-    <input type="text" name="candidateRequirements.fieldStudyOptions" id="candidateRequirements.fieldStudyOptions" placeholder="AI will suggest qualifying fields">
+    <label for="candidateRequirements.requiredFieldOfStudy">Field of Study:</label>
+    <input type="text" name="candidateRequirements.requiredFieldOfStudy" id="candidateRequirements.requiredFieldOfStudy" placeholder="Computer Science, Software Engineering">
 </div>
-
 <div class="form-group">
-    <label for="candidateRequirements.experienceRange">Years of Experience Range:</label>
-    <input type="text" name="candidateRequirements.experienceRange" id="candidateRequirements.experienceRange" placeholder="AI will calculate your experience level">
+    <label for="candidateRequirements.requiredYearsOfExperience">Years of Experience:</label>
+    <input type="text" name="candidateRequirements.requiredYearsOfExperience" id="candidateRequirements.requiredYearsOfExperience" placeholder="3-5 years">
+</div>
+<div class="form-group">
+    <label for="candidateRequirements.requiredSkills">Required Skills:</label>
+    <textarea name="candidateRequirements.requiredSkills" id="candidateRequirements.requiredSkills" rows="3" placeholder="JavaScript, React, Node.js, AWS..."></textarea>
 </div>
             <div class="form-group">
                 <label for="jobIdentification.referenceID">Reference ID:</label>
