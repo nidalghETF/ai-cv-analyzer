@@ -148,10 +148,10 @@
             </div>
 
             <h3>Professional Summary</h3>
-            <div class="form-group">
-                <label for="professionalSummary">Summary:</label>
-                <textarea name="professionalSummary" id="professionalSummary" rows="4"></textarea>
-            </div>
+<div class="form-group">
+    <label for="personalInfo.summary">AI-Generated Summary:</label>
+    <textarea name="personalInfo.summary" id="personalInfo.summary" rows="4" placeholder="AI will generate a professional summary from your CV"></textarea>
+</div>
 
             <h3>Core Competencies</h3>
             <div class="form-group">
@@ -411,15 +411,16 @@
                             <input type="text" name="languages.${index}.proficiency" placeholder="Proficiency (e.g., Native, Fluent)">
                         </div>`,
                     experience: (index) => `
-                        <div class="dynamic-item" data-type="experience">
-                            <h4>Experience ${index + 1}</h4>
-                            <input type="text" name="experience.${index}.jobTitle" placeholder="Job Title" required>
-                            <input type="text" name="experience.${index}.companyName" placeholder="Company Name" required>
-                            <input type="text" name="experience.${index}.employmentDates" placeholder="e.g., Jan 2020 - Dec 2022">
-                            <input type="text" name="experience.${index}.location" placeholder="Location">
-                            <textarea name="experience.${index}.keyResponsibilities" rows="2" placeholder="Key Responsibilities"></textarea>
-                            <textarea name="experience.${index}.keyAchievements" rows="2" placeholder="Key Achievements"></textarea>
-                        </div>`,
+    <div class="dynamic-item" data-type="experience">
+        <h4>Experience ${index + 1}</h4>
+        <input type="text" name="experience.${index}.jobTitle" placeholder="Job Title" required>
+        <input type="text" name="experience.${index}.companyName" placeholder="Company Name" required>
+        <input type="text" name="experience.${index}.employmentDates" placeholder="e.g., Jan 2020 - Dec 2022">
+        <input type="text" name="experience.${index}.location" placeholder="Location">
+        <textarea name="experience.${index}.jobDescription" rows="3" placeholder="Job Description (paragraph format)"></textarea>
+        <textarea name="experience.${index}.keyResponsibilities" rows="2" placeholder="Key Responsibilities (bullet points)"></textarea>
+        <textarea name="experience.${index}.keyAchievements" rows="2" placeholder="Key Achievements (quantified results)"></textarea>
+    </div>`,
                     education: (index) => `
                         <div class="dynamic-item" data-type="education">
                             <h4>Education ${index + 1}</h4>

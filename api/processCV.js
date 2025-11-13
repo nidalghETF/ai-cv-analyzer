@@ -39,15 +39,16 @@ PROFESSIONAL SUMMARY REQUIREMENT:
       {"name": "language", "proficiency": "Native/Fluent/Intermediate/Basic"}
     ],
     "experience": [
-      {
-        "jobTitle": "position", 
-        "companyName": "employer", 
-        "employmentDates": "date range",
-        "location": "city/state", 
-        "keyResponsibilities": "bullet points", 
-        "keyAchievements": "quantified results"
-      }
-    ],
+  {
+    "jobTitle": "position", 
+    "companyName": "employer", 
+    "employmentDates": "date range",
+    "location": "city/state", 
+    "jobDescription": "CREATE 2-3 sentence paragraph describing the role and overall responsibilities",
+    "keyResponsibilities": "bullet points", 
+    "keyAchievements": "quantified results"
+  }
+],
     "education": [
       {
         "degree": "degree name", 
