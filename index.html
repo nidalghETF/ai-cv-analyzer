@@ -446,40 +446,43 @@
             };
 
             // --- Form Population & Serialization ---
-            const FormSerializer = {
-                populate: (formId, data) => {
-                    const form = document.getElementById(formId);
-                    if (!data || !form) return;
+const FormSerializer = {
+  populate: (formId, data) => {
+    const form = document.getElementById(formId);
+    if (!data || !form) return;
 
-                    // Clear existing dynamic fields safely
-                    ['certificationsContainer', 'languagesContainer', 'experienceContainer', 'educationContainer'].forEach(id => {
-                        FormUtils.clearDynamicContainer(id);
-                    });
+    // Clear existing dynamic fields
+    ['certificationsContainer', 'languagesContainer', 'experienceContainer', 'educationContainer'].forEach(id => {
+      FormUtils.clearDynamicContainer(id);
+    });
 
-                    // Pre-populate dynamic fields based on array lengths from data
-                    const arrayLengths = {
-                        certifications: data.certifications?.length || 0,
-                        languages: data.languages?.length || 0,
-                        experience: data.experience?.length || 0,
-                        education: data.education?.length || 0
-                    };
+    // AUTO-CREATE DYNAMIC FIELDS BASED ON AI DATA
+    const autoCreateFields = {
+      certifications: data.certifications?.length || 0,
+      languages: data.languages?.length || 0,
+      experience: data.experience?.length || 0,
+      education: data.education?.length || 0
+    };
 
-                    for (let i = 0; i < arrayLengths.certifications; i++) DynamicFields.add('certificationsContainer', 'certification');
-                    for (let i = 0; i < arrayLengths.languages; i++) DynamicFields.add('languagesContainer', 'language');
-                    for (let i = 0; i < arrayLengths.experience; i++) DynamicFields.add('experienceContainer', 'experience');
-                    for (let i = 0; i < arrayLengths.education; i++) DynamicFields.add('educationContainer', 'education');
+    // Create fields for each item found by AI
+    for (let i = 0; i < autoCreateFields.certifications; i++) DynamicFields.add('certificationsContainer', 'certification');
+    for (let i = 0; i < autoCreateFields.languages; i++) DynamicFields.add('languagesContainer', 'language');
+    for (let i = 0; i < autoCreateFields.experience; i++) DynamicFields.add('experienceContainer', 'experience');
+    for (let i = 0; i < autoCreateFields.education; i++) DynamicFields.add('educationContainer', 'education');
 
-                    // Set values for all fields after DOM is populated
-                    setTimeout(() => {
-                        const flattened = FormSerializer.flattenObject(data);
-                        Object.entries(flattened).forEach(([key, value]) => {
-                            const element = form.querySelector(`[name="${key}"]`);
-                            if (element && value !== undefined && value !== null) {
-                                element.value = SecurityUtils.sanitizeForDOM(value);
-                            }
-                        });
-                    }, 0);
-                },
+    // Set values after DOM is populated
+    setTimeout(() => {
+      const flattened = FormSerializer.flattenObject(data);
+      Object.entries(flattened).forEach(([key, value]) => {
+        const element = form.querySelector(`[name="${key}"]`);
+        if (element && value !== undefined && value !== null && value !== '') {
+          element.value = SecurityUtils.sanitizeForDOM(value);
+        }
+      });
+    }, 100); // Slightly longer delay to ensure DOM is ready
+  },
+  // ... keep the rest of your existing FormSerializer functions
+};
                 flattenObject: (obj, prefix = '') => {
                     const flattened = {};
                     for (const [key, value] of Object.entries(obj)) {

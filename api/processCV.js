@@ -8,7 +8,7 @@ const CONFIG = {
   TIMEOUT_MS: 60000
 };
 
-const SYSTEM_PROMPT = `Extract CV data into this exact JSON structure:
+const SYSTEM_PROMPT = `Extract CV data into this exact JSON structure. CREATE DYNAMIC ARRAYS for multi-item sections.
 
 {
   "cvData": {
@@ -20,33 +20,59 @@ const SYSTEM_PROMPT = `Extract CV data into this exact JSON structure:
       "location": "city/state from address",
       "linkedIn": "linkedin url if present",
       "portfolio": "portfolio/github url if present",
-      "summary": "extract from summary/profile sections"
+      "summary": "CREATE PROFESSIONAL 3-4 SENTENCE SUMMARY from entire CV"
     },
     "coreCompetencies": {
-      "technicalSkills": "extract all technical skills/tools",
-      "softSkills": "extract interpersonal/soft skills"
+      "technicalSkills": "extract all technical skills/tools as comma list",
+      "softSkills": "extract interpersonal/soft skills as comma list"
     },
-    "certifications": [],
-    "languages": [],
-    "experience": [],
-    "education": [],
+    "certifications": [
+      {"name": "cert name", "issuingOrganization": "issuer", "date": "YYYY-MM-DD"}
+    ],
+    "languages": [
+      {"name": "language", "proficiency": "Native/Fluent/Intermediate/Basic"}
+    ],
+    "experience": [
+      {
+        "jobTitle": "position", 
+        "companyName": "employer", 
+        "employmentDates": "date range",
+        "location": "city/state", 
+        "keyResponsibilities": "bullet points", 
+        "keyAchievements": "quantified results"
+      }
+    ],
+    "education": [
+      {
+        "degree": "degree name", 
+        "institutionName": "school", 
+        "completionDate": "graduation year", 
+        "location": "city/state"
+      }
+    ],
     "additionalInfo": {
-      "projects": "",
-      "publications": "", 
-      "professionalMemberships": "",
-      "volunteerExperience": ""
+      "projects": "extract project descriptions",
+      "publications": "extract publications/research", 
+      "professionalMemberships": "extract organizations",
+      "volunteerExperience": "extract volunteer work"
     }
   },
   "jobData": {
-    "jobIdentification": {"jobTitle": "based on experience"},
+    "jobIdentification": {"jobTitle": "CREATE BASED ON EXPERIENCE"},
     "companyInfo": {"industryType": "inferred from background"},
-    "positionDetails": {"summary": "role description"},
+    "positionDetails": {"summary": "CREATE JOB DESCRIPTION"},
     "candidateRequirements": {"essentialSkills": "from cv skills"},
     "compensationAndBenefits": {"estimatedRange": "industry standard"}
   }
 }
 
-CRITICAL: Return ONLY valid JSON. No explanations, no markdown, no other text.`;
+**DYNAMIC FIELD RULES:**
+- "certifications", "languages", "experience", "education" are ARRAYS
+- Fill arrays with ALL items found in CV
+- Create professional summary from career highlights
+- For empty arrays, use [] not null
+
+CRITICAL: Return ONLY valid JSON. No explanations, no markdown.`;
 
 let genAI, model;
 
