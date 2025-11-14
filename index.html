@@ -112,7 +112,7 @@
         </p>
         <input type="file" id="cvFileInput" accept=".pdf" aria-label="CV PDF file input" />
         <button id="processBtn" disabled>Analyze CV with AI</button>
-<button id="retryBtn" style="display: none;" class="btn-secondary">Re-analyze with AI</button>
+        <button id="retryBtn" style="display: none;" class="btn-secondary">Re-analyze with AI</button>
     </div>
 
     <div id="cvTemplateSection" class="template-section" style="display: none;">
@@ -739,12 +739,11 @@
 
             function arrayBufferToBase64(buffer) {
             // New function for user-controlled retry
-            async function handleRetryAnalysis() {
+           async function handleRetryAnalysis() {
                 if (!lastProcessedFile) {
                     UI.showMessage('No previous CV to re-analyze. Please upload a CV first.', true);
                     return;
                 }
-
                 try {
                     UI.hideMessage();
                     UI.setProcessingState(true);
@@ -788,7 +787,18 @@
                     UI.setProcessingState(false);
                 }
             }
+            }
 
+            // Show/hide retry button based on state
+            function toggleRetryButton(show) {
+                const retryBtn = document.getElementById('retryBtn');
+                if (retryBtn) {
+                    retryBtn.style.display = show ? 'inline-block' : 'none';
+                    console.log('Retry button display set to:', retryBtn.style.display);
+                } else {
+                    console.error('Retry button not found in DOM!');
+                }
+            }
             // Show/hide retry button based on state
             function toggleRetryButton(show) {
                 const retryBtn = document.getElementById('retryBtn');
