@@ -455,7 +455,7 @@ export default async function handler(request, response) {
         }
       }
       
-      throw lastError;}
+      throw lastError;
     }
     // Call AI with network-only retry logic
     const parsedData = await callAIWithRetry({ text: SYSTEM_PROMPT }, pdfDataPart);
