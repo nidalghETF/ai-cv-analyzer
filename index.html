@@ -509,6 +509,557 @@
     </div>
 
     <script>
+// --- Application Configuration ---
+const CONFIG = {
+    BACKEND_API_ENDPOINT: '/api/processCV',
+    MAX_FILE_SIZE_MB: 2,
+    STORAGE_KEYS: { cv: 'cvData', job: 'jobData' }
+};
+
+// --- Security Utilities ---
+const SecurityUtils = {
+    sanitizeForDOM: (str) => {
+        if (typeof str !== 'string') return '';
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#x27;');
+    },
+    
+    validateFile: (file) => {
+        if (!file) throw new Error('No file selected');
+        if (file.type !== 'application/pdf') {
+            throw new Error('Invalid file type. Only PDF files are supported.');
+        }
+        const maxSize = CONFIG.MAX_FILE_SIZE_MB * 1024 * 1024;
+        if (file.size > maxSize) {
+            throw new Error(`File too large. Maximum size is ${CONFIG.MAX_FILE_SIZE_MB}MB.`);
+        }
+    }
+};
+
+// --- Storage Utilities ---
+const StorageUtils = {
+    save: (key, data) => {
+        try {
+            localStorage.setItem(CONFIG.STORAGE_KEYS[key], JSON.stringify(data));
+            return true;
+        } catch (e) {
+            console.error('Storage save failed:', e);
+            return false;
+        }
+    },
+    
+    load: (key) => {
+        try {
+            const data = localStorage.getItem(CONFIG.STORAGE_KEYS[key]);
+            return data ? JSON.parse(data) : null;
+        } catch (e) {
+            console.error('Storage load failed:', e);
+            return null;
+        }
+    },
+    
+    clear: (key) => {
+        localStorage.removeItem(CONFIG.STORAGE_KEYS[key]);
+    }
+};
+
+// --- UI Management ---
+const UI = {
+    showMessage: (message, isError = false) => {
+        const statusDiv = document.getElementById('statusMessage');
+        statusDiv.textContent = message;
+        statusDiv.className = isError ? 'alert alert-error' : 'alert alert-success';
+        statusDiv.style.display = 'block';
+        
+        if (!isError) {
+            setTimeout(() => UI.hideMessage(), 5000);
+        }
+    },
+    
+    hideMessage: () => {
+        const statusDiv = document.getElementById('statusMessage');
+        statusDiv.style.display = 'none';
+    },
+    
+    setProcessingState: (isProcessing) => {
+        const btn = document.getElementById('processBtn');
+        const text = document.getElementById('processText');
+        const spinner = document.getElementById('processSpinner');
+        
+        if (isProcessing) {
+            btn.disabled = true;
+            text.textContent = 'Processing...';
+            spinner.style.display = 'inline-block';
+        } else {
+            btn.disabled = false;
+            text.textContent = '🤖 Analyze CV with AI';
+            spinner.style.display = 'none';
+        }
+    },
+    
+    showSection: (sectionId) => {
+        document.getElementById(sectionId).style.display = 'block';
+    },
+    
+    hideSection: (sectionId) => {
+        document.getElementById(sectionId).style.display = 'none';
+    }
+};
+
+// --- Dynamic Field Templates ---
+const DynamicTemplates = {
+    certification: (index) => `
+        <div class="dynamic-item" data-type="certification">
+            <button type="button" class="delete-btn" onclick="this.parentElement.remove()">×</button>
+            <div class="form-group">
+                <label class="form-label">Certification Name:</label>
+                <input type="text" class="form-control" name="certifications.${index}.name" placeholder="Certification Name" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Issuing Organization:</label>
+                <input type="text" class="form-control" name="certifications.${index}.issuingOrganization" placeholder="Issuing Organization">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Date:</label>
+                <input type="date" class="form-control" name="certifications.${index}.date">
+            </div>
+        </div>
+    `,
+    
+    language: (index) => `
+        <div class="dynamic-item" data-type="language">
+            <button type="button" class="delete-btn" onclick="this.parentElement.remove()">×</button>
+            <div class="form-group">
+                <label class="form-label">Language:</label>
+                <input type="text" class="form-control" name="languages.${index}.name" placeholder="Language Name" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Proficiency:</label>
+                <input type="text" class="form-control" name="languages.${index}.proficiency" placeholder="Native/Fluent/Intermediate/Basic">
+            </div>
+        </div>
+    `,
+    
+    experience: (index) => `
+        <div class="dynamic-item" data-type="experience">
+            <button type="button" class="delete-btn" onclick="this.parentElement.remove()">×</button>
+            <h4>Experience ${index + 1}</h4>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Job Title:</label>
+                    <input type="text" class="form-control" name="experience.${index}.jobTitle" placeholder="Job Title" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Company:</label>
+                    <input type="text" class="form-control" name="experience.${index}.companyName" placeholder="Company Name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Employment Dates:</label>
+                    <input type="text" class="form-control" name="experience.${index}.employmentDates" placeholder="Jan 2020 - Dec 2022">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Location:</label>
+                    <input type="text" class="form-control" name="experience.${index}.location" placeholder="City, Country">
+                </div>
+                <div class="form-group full-width">
+                    <label class="form-label">Job Description:</label>
+                    <textarea class="form-control" name="experience.${index}.jobDescription" rows="3" placeholder="Overall role description"></textarea>
+                </div>
+                <div class="form-group full-width">
+                    <label class="form-label">Key Responsibilities:</label>
+                    <textarea class="form-control" name="experience.${index}.keyResponsibilities" rows="2" placeholder="Key responsibilities"></textarea>
+                </div>
+                <div class="form-group full-width">
+                    <label class="form-label">Key Achievements:</label>
+                    <textarea class="form-control" name="experience.${index}.keyAchievements" rows="2" placeholder="Quantifiable achievements"></textarea>
+                </div>
+            </div>
+        </div>
+    `,
+    
+    education: (index) => `
+        <div class="dynamic-item" data-type="education">
+            <button type="button" class="delete-btn" onclick="this.parentElement.remove()">×</button>
+            <h4>Education ${index + 1}</h4>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Degree:</label>
+                    <input type="text" class="form-control" name="education.${index}.degree" placeholder="Degree Name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Institution:</label>
+                    <input type="text" class="form-control" name="education.${index}.institutionName" placeholder="Institution Name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Completion Date:</label>
+                    <input type="text" class="form-control" name="education.${index}.completionDate" placeholder="2022">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Location:</label>
+                    <input type="text" class="form-control" name="education.${index}.location" placeholder="City, Country">
+                </div>
+            </div>
+        </div>
+    `,
+    
+    project: (index) => `
+        <div class="dynamic-item" data-type="project">
+            <button type="button" class="delete-btn" onclick="this.parentElement.remove()">×</button>
+            <h4>Project ${index + 1}</h4>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Project Title:</label>
+                    <input type="text" class="form-control" name="projects.${index}.title" placeholder="Project Title" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Technologies:</label>
+                    <input type="text" class="form-control" name="projects.${index}.technologies" placeholder="Technologies Used">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Dates:</label>
+                    <input type="text" class="form-control" name="projects.${index}.dates" placeholder="Project Timeline">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">URL:</label>
+                    <input type="text" class="form-control" name="projects.${index}.url" placeholder="Project URL">
+                </div>
+                <div class="form-group full-width">
+                    <label class="form-label">Description:</label>
+                    <textarea class="form-control" name="projects.${index}.description" rows="3" placeholder="Project description and outcomes"></textarea>
+                </div>
+            </div>
+        </div>
+    `
+};
+
+// --- Dynamic Field Management ---
+const DynamicFields = {
+    add: (containerId, type) => {
+        const container = document.getElementById(containerId);
+        const items = container.querySelectorAll(`[data-type="${type}"]`);
+        const index = items.length;
+        container.insertAdjacentHTML('beforeend', DynamicTemplates[type](index));
+    },
+    
+    clear: (containerId) => {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+    }
+};
+
+// --- Form Serialization ---
+const FormSerializer = {
+    serialize: (form) => {
+        const formData = new FormData(form);
+        const result = {};
+        
+        for (const [key, value] of formData.entries()) {
+            this.setNestedValue(result, key, value);
+        }
+        return result;
+    },
+    
+    setNestedValue: (obj, path, value) => {
+        const keys = path.split('.');
+        let current = obj;
+        
+        for (let i = 0; i < keys.length - 1; i++) {
+            const key = keys[i];
+            const nextKey = keys[i + 1];
+            const isArrayIndex = /^\d+$/.test(nextKey);
+            
+            if (!(key in current)) {
+                current[key] = isArrayIndex ? [] : {};
+            }
+            current = current[key];
+        }
+        
+        const lastKey = keys[keys.length - 1];
+        if (Array.isArray(current)) {
+            const index = parseInt(lastKey, 10);
+            current[index] = value;
+        } else {
+            current[lastKey] = value;
+        }
+    },
+    
+    populate: (formId, data) => {
+        const form = document.getElementById(formId);
+        if (!form || !data) return;
+        
+        // Clear dynamic containers
+        ['certificationsContainer', 'languagesContainer', 'experienceContainer', 'educationContainer', 'projectsContainer']
+            .forEach(id => DynamicFields.clear(id));
+        
+        // Create minimum fields
+        const fieldCounts = {
+            certifications: Math.max(data.certifications?.length || 0, 1),
+            languages: Math.max(data.languages?.length || 0, 1),
+            experience: Math.max(data.experience?.length || 0, 1),
+            education: Math.max(data.education?.length || 0, 1),
+            projects: Math.max(data.projects?.length || 0, 1)
+        };
+        
+        // Add fields
+        for (let i = 0; i < fieldCounts.certifications; i++) DynamicFields.add('certificationsContainer', 'certification');
+        for (let i = 0; i < fieldCounts.languages; i++) DynamicFields.add('languagesContainer', 'language');
+        for (let i = 0; i < fieldCounts.experience; i++) DynamicFields.add('experienceContainer', 'experience');
+        for (let i = 0; i < fieldCounts.education; i++) DynamicFields.add('educationContainer', 'education');
+        for (let i = 0; i < fieldCounts.projects; i++) DynamicFields.add('projectsContainer', 'project');
+        
+        // Set values after a brief delay to ensure DOM is updated
+        setTimeout(() => {
+            const flattened = this.flattenObject(data);
+            Object.entries(flattened).forEach(([key, value]) => {
+                const element = form.querySelector(`[name="${key}"]`);
+                if (element && value !== undefined && value !== null) {
+                    element.value = SecurityUtils.sanitizeForDOM(String(value));
+                }
+            });
+        }, 100);
+    },
+    
+    flattenObject: (obj, prefix = '') => {
+        const flattened = {};
+        for (const [key, value] of Object.entries(obj)) {
+            const newKey = prefix ? `${prefix}.${key}` : key;
+            if (Array.isArray(value)) {
+                value.forEach((item, index) => {
+                    Object.assign(flattened, this.flattenObject(item, `${newKey}.${index}`));
+                });
+            } else if (typeof value === 'object' && value !== null) {
+                Object.assign(flattened, this.flattenObject(value, newKey));
+            } else {
+                flattened[newKey] = value;
+            }
+        }
+        return flattened;
+    }
+};
+
+// --- File Processing ---
+let lastProcessedFile = null;
+
+async function handleCVProcess() {
+    const fileInput = document.getElementById('cvFileInput');
+    const file = fileInput.files[0];
+    lastProcessedFile = file;
+    
+    try {
+        SecurityUtils.validateFile(file);
+        UI.hideMessage();
+        UI.setProcessingState(true);
+        
+        const arrayBuffer = await file.arrayBuffer();
+        const base64String = arrayBufferToBase64(arrayBuffer);
+        
+        const response = await fetch(CONFIG.BACKEND_API_ENDPOINT, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ pdfBase64: base64String })
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `Server error: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        
+        // Populate forms with AI data
+        FormSerializer.populate('cvTemplateForm', result.cvData || {});
+        FormSerializer.populate('jobTemplateForm', result.jobData || {});
+        
+        // Show results sections
+        UI.showSection('cvTemplateSection');
+        UI.showSection('jobTemplateSection');
+        UI.hideSection('uploadSection');
+        
+        // Show retry button
+        document.getElementById('retryBtn').style.display = 'inline-block';
+        
+        UI.showMessage('CV analyzed successfully! Please review and edit the information.');
+        
+    } catch (error) {
+        console.error('Processing error:', error);
+        UI.showMessage(`Error: ${error.message}`, true);
+    } finally {
+        UI.setProcessingState(false);
+    }
+}
+
+async function handleRetryAnalysis() {
+    if (!lastProcessedFile) {
+        UI.showMessage('No previous CV to re-analyze.', true);
+        return;
+    }
+    await handleCVProcess();
+}
+
+function arrayBufferToBase64(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+}
+
+// --- Data Management ---
+function saveFormData(type) {
+    const formId = type === 'cv' ? 'cvTemplateForm' : 'jobTemplateForm';
+    const form = document.getElementById(formId);
+    const data = FormSerializer.serialize(form);
+    
+    if (StorageUtils.save(type, data)) {
+        UI.showMessage(`${type === 'cv' ? 'CV' : 'Job'} data saved successfully.`);
+    } else {
+        UI.showMessage('Failed to save data. Storage may be full.', true);
+    }
+}
+
+function resetForm(type) {
+    if (!confirm(`Are you sure you want to clear all ${type} data?`)) return;
+    
+    StorageUtils.clear(type);
+    const formId = type === 'cv' ? 'cvTemplateForm' : 'jobTemplateForm';
+    const form = document.getElementById(formId);
+    if (form) form.reset();
+    
+    // Clear dynamic fields
+    ['certificationsContainer', 'languagesContainer', 'experienceContainer', 'educationContainer', 'projectsContainer']
+        .forEach(id => DynamicFields.clear(id));
+    
+    UI.showMessage(`${type === 'cv' ? 'CV' : 'Job'} data cleared.`);
+    
+    // If both forms are empty, show upload section
+    if (!StorageUtils.load('cv') && !StorageUtils.load('job')) {
+        UI.showSection('uploadSection');
+        UI.hideSection('cvTemplateSection');
+        UI.hideSection('jobTemplateSection');
+    }
+}
+
+// --- Project Import/Export ---
+function exportProject() {
+    try {
+        const cvData = FormSerializer.serialize(document.getElementById('cvTemplateForm'));
+        const jobData = FormSerializer.serialize(document.getElementById('jobTemplateForm'));
+        
+        const projectData = {
+            cvData,
+            jobData,
+            metadata: {
+                exportDate: new Date().toISOString(),
+                version: '1.0'
+            }
+        };
+        
+        const dataStr = JSON.stringify(projectData, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(dataBlob);
+        
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `CV_Project_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        UI.showMessage('Project exported successfully!');
+    } catch (error) {
+        console.error('Export error:', error);
+        UI.showMessage('Failed to export project.', true);
+    }
+}
+
+function importProject() {
+    document.getElementById('importFileInput').click();
+}
+
+function handleImportFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const projectData = JSON.parse(e.target.result);
+            
+            if (!projectData.cvData || !projectData.jobData) {
+                throw new Error('Invalid project file');
+            }
+            
+            if (confirm('This will replace current data. Continue?')) {
+                FormSerializer.populate('cvTemplateForm', projectData.cvData);
+                FormSerializer.populate('jobTemplateForm', projectData.jobData);
+                
+                UI.showSection('cvTemplateSection');
+                UI.showSection('jobTemplateSection');
+                UI.hideSection('uploadSection');
+                
+                UI.showMessage('Project imported successfully!');
+            }
+        } catch (error) {
+            console.error('Import error:', error);
+            UI.showMessage('Invalid project file format.', true);
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+}
+
+// --- Dynamic Field Functions (Global) ---
+window.addCertification = () => DynamicFields.add('certificationsContainer', 'certification');
+window.addLanguage = () => DynamicFields.add('languagesContainer', 'language');
+window.addExperience = () => DynamicFields.add('experienceContainer', 'experience');
+window.addEducation = () => DynamicFields.add('educationContainer', 'education');
+window.addProject = () => DynamicFields.add('projectsContainer', 'project');
+window.saveFormData = saveFormData;
+window.resetForm = resetForm;
+window.exportProject = exportProject;
+window.importProject = importProject;
+
+// --- Initialization ---
+document.addEventListener('DOMContentLoaded', function() {
+    // File input change handler
+    document.getElementById('cvFileInput').addEventListener('change', function() {
+        document.getElementById('processBtn').disabled = !this.files[0];
+    });
+    
+    // Process button handler
+    document.getElementById('processBtn').addEventListener('click', handleCVProcess);
+    
+    // Retry button handler
+    document.getElementById('retryBtn').addEventListener('click', handleRetryAnalysis);
+    
+    // Import file handler
+    document.getElementById('importFileInput').addEventListener('change', handleImportFile);
+    
+    // Load saved data
+    const savedCv = StorageUtils.load('cv');
+    const savedJob = StorageUtils.load('job');
+    
+    if (savedCv || savedJob) {
+        if (savedCv) FormSerializer.populate('cvTemplateForm', savedCv);
+        if (savedJob) FormSerializer.populate('jobTemplateForm', savedJob);
+        
+        UI.showSection('cvTemplateSection');
+        UI.showSection('jobTemplateSection');
+        UI.hideSection('uploadSection');
+        
+        UI.showMessage('Loaded previously saved data.');
+    }
+    
+    console.log('Professional CV Analyzer initialized');
+});
         // Complete JavaScript implementation will follow in the next message
         // This ensures the HTML structure is properly separated
         console.log('Professional CV Analyzer loaded');
