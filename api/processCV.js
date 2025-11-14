@@ -102,7 +102,7 @@ const SecurityUtils = {
   }
 };
 
-const SYSTEM_PROMPT = `Extract CV data into this exact JSON structure. CREATE PROFESSIONAL SUMMARY and DYNAMIC ARRAYS.
+const SYSTEM_PROMPT = `Extract CV data into this exact JSON structure. CRITICAL: EXTRACT CERTIFICATIONS AND PROJECTS FROM ANY SECTION.
 
 PROFESSIONAL SUMMARY REQUIREMENT:
 - MUST create 3-4 sentence professional summary from entire CV
@@ -110,6 +110,18 @@ PROFESSIONAL SUMMARY REQUIREMENT:
 - Make it compelling and professional - not just concatenated text
 - NEVER leave empty - create from experience if no explicit summary exists
 - MUST be grammatically correct and coherent
+
+CERTIFICATION EXTRACTION RULES:
+- Extract ALL workshops, training programs, certifications regardless of section name
+- Look for: "Workshop", "Training", "Certification", "Course", "Program", "Seminar"
+- Include instructor names as issuingOrganization if no organization specified
+- Search entire CV, not just "Certifications" section
+
+PROJECT EXTRACTION RULES:
+- Extract ALL projects: academic, personal, freelance, design portfolios, case studies
+- Look beyond "Projects" section - check experience, education, and additional sections
+- Include university projects, personal initiatives, design case studies, freelance work
+- Even brief mentions in other sections should be extracted
 
 {
   "cvData": {
@@ -128,10 +140,17 @@ PROFESSIONAL SUMMARY REQUIREMENT:
       "softSkills": "extract interpersonal/soft skills as comma list"
     },
     "certifications": [
-      {"name": "cert name", "issuingOrganization": "issuer", "date": "YYYY-MM-DD"}
+      {
+        "name": "EXTRACT certification/workshop name", 
+        "issuingOrganization": "organization/instructor/company",
+        "date": "YYYY-MM-DD if available"
+      }
     ],
     "languages": [
-      {"name": "language", "proficiency": "Native/Fluent/Intermediate/Basic"}
+      {
+        "name": "language", 
+        "proficiency": "Native/Fluent/Intermediate/Basic"
+      }
     ],
     "experience": [
       {
@@ -153,7 +172,15 @@ PROFESSIONAL SUMMARY REQUIREMENT:
       }
     ],
     "additionalInfo": {
-      "projects": "EXTRACT AS ARRAY OF PROJECT OBJECTS - NOT FLAT TEXT",
+      "projects": [
+        {
+          "title": "EXTRACT project title from anywhere in CV",
+          "description": "project scope, objectives, and outcomes",
+          "technologies": "tools/software/methods used",
+          "dates": "project timeline if available",
+          "url": "portfolio/github links if available"
+        }
+      ],
       "publications": "extract publications/research", 
       "professionalMemberships": "extract organizations",
       "volunteerExperience": "extract volunteer work"
@@ -175,9 +202,122 @@ PROFESSIONAL SUMMARY REQUIREMENT:
   }
 }
 
+CERTIFICATION EXAMPLES:
+- "From Nature to Art Installation of Bioconstruction" → {"name": "From Nature to Art Installation of Bioconstruction", "issuingOrganization": "Asli Tekin", "date": "2023-02-01"}
+- "Save the Planet Design for Circular Economy" → {"name": "Save the Planet Design for Circular Economy", "issuingOrganization": "Marco Guama", "date": "2023-10-01"}
+- Any workshop, training, or certification mentioned anywhere in CV
+
+PROJECT EXAMPLES:
+- University design projects mentioned in education section
+- Personal projects mentioned in experience or additional sections  
+- Portfolio pieces or case studies
+- Freelance work or academic assignments
+
+JOB DATA GENERATION RULES:
+- jobTitles: Generate 3-5 ACTUAL job titles separated by commas based on CV experience
+- industrySector: Suggest 2-3 ACTUAL industries that match the career background  
+- requiredEducationLevel: Determine the ACTUAL minimum education required for these roles
+- requiredFieldOfStudy: Suggest 2-3 ACTUAL relevant academic fields
+- requiredYearsOfExperience: Calculate ACTUAL experience range like "3-5 years" or "5-8 years"
+- requiredSkills: Extract ACTUAL essential skills from the CV competencies
+
+DATA QUALITY RULES:
+- professionalSummary: MUST be complete, coherent sentences. NO incomplete thoughts or gibberish.
+- experience.dates: MUST be in employmentDates field ONLY
+- experience.location: MUST be in location field ONLY  
+- experience.keyResponsibilities: MUST be actual bullet points from CV, NOT field labels
+- ALL text: MUST be grammatically correct and complete sentences
+- education: Extract as structured objects, NOT markdown tables
+- projects: MUST extract actual project data if present in CV
+- certifications: MUST extract ALL certifications/workshops from entire CV
+
+REJECTION CRITERIA:
+- If any field contains incomplete sentences or gibberish, REGENERATE
+- If dates appear in wrong fields, CORRECT THE MAPPING
+- If bullet points contain field labels instead of actual content, FIX IT
+- If certifications section is empty but CV mentions workshops/training, SEARCH AGAIN
+- If projects section is empty but CV mentions project work, SEARCH AGAIN
+
+EXAMPLE OUTPUT:
+{
+  "cvData": {
+    "personalInfo": {
+      "fullName": "Lamis Gharzeddine",
+      "professionalTitle": "Design Intern",
+      "phone": "+39 3347569416",
+      "email": "lamis.gharzeddine@gmail.com",
+      "location": "Rome, Italy",
+      "linkedIn": "",
+      "portfolio": "",
+      "summary": "An enthusiastic and adaptable Design student pursuing a BA in Design with a strong academic record, complemented by practical internships in interior design and studio art. Lamis possesses a solid foundation in design software, including AutoCAD, Rhino, and Photoshop, and is adept at developing projects from concept to presentation. Her experience extends to sustainable design principles and client interaction, demonstrating a commitment to innovative and environmentally conscious solutions."
+    },
+    "coreCompetencies": {
+      "technicalSkills": "Autocad, Rhino, Vray Rendering, 3DsMax, Dialux, Sketchup, Photoshop, InDesign",
+      "softSkills": "Teamwork, Adaptability, Enthusiasm, Open-minded, Communication"
+    },
+    "certifications": [
+      {"name": "From Nature to Art Installation of Bioconstruction", "issuingOrganization": "Asli Tekin", "date": "2023-02-01"},
+      {"name": "Save the Planet Design for Circular Economy", "issuingOrganization": "Marco Guama", "date": "2023-10-01"}
+    ],
+    "languages": [
+      {"name": "English", "proficiency": "Fluent"},
+      {"name": "Spanish", "proficiency": "Intermediate"},
+      {"name": "Italian", "proficiency": "Intermediate"}
+    ],
+    "experience": [
+      {
+        "jobTitle": "Interior Design Intern", 
+        "companyName": "ām. Studio", 
+        "employmentDates": "August 2025 - September 2025",
+        "location": "Aley, Lebanon", 
+        "jobDescription": "As an Interior Design Intern, Lamis was responsible for the end-to-end design process, from conceptualization to client presentation. This included developing detailed project designs using industry-standard software and effectively communicating design solutions for various clients.",
+        "keyResponsibilities": "Developing project designs, Client presentations, Software utilization", 
+        "keyAchievements": "Successfully contributed to client projects by designing interaction process and demonstrations"
+      }
+    ],
+    "education": [
+      {
+        "degree": "BA Design", 
+        "institutionName": "Rome University of Fine Arts", 
+        "completionDate": "2026", 
+        "location": "Rome, Italy"
+      }
+    ],
+    "additionalInfo": {
+      "projects": [
+        {
+          "title": "Garbage Patch State",
+          "description": "Contributed to development and construction of artistic installation focusing on environmental awareness",
+          "technologies": "Mixed media, Sustainable materials",
+          "dates": "2023-2024",
+          "url": ""
+        }
+      ],
+      "publications": "", 
+      "professionalMemberships": "",
+      "volunteerExperience": ""
+    }
+  },
+  "jobData": {
+    "jobIdentification": {
+        "jobTitles": "Junior Interior Designer, Design Assistant, CAD Technician, Sustainable Design Intern, Exhibit Designer"
+    },
+    "companyInformation": {
+        "industrySector": "Architecture & Design, Interior Design, Sustainable Design, Art & Exhibitions"
+    },
+    "candidateRequirements": {
+        "requiredEducationLevel": "Bachelor's Degree",
+        "requiredFieldOfStudy": "Design, Interior Design, Architecture, Fine Arts", 
+        "requiredYearsOfExperience": "0-2 years",
+        "requiredSkills": "AutoCAD, Rhino, 3DsMax, Sketchup, Photoshop, InDesign, Project Development, Client Presentations, Teamwork, Sustainable Design Principles"
+    }
+  }
+}
+
 CRITICAL RULES:
 - summary field MUST contain AI-generated professional summary
 - projects should be structured objects, not flat text
+- certifications MUST be extracted from entire CV, not just certifications section
 - Fill ALL arrays with actual data from CV
 - Return ONLY valid JSON`;
 
@@ -263,58 +403,63 @@ export default async function handler(request, response) {
     };
 
     // Enhanced timeout with retry logic
-    let lastError;
-    for (let attempt = 1; attempt <= RATE_LIMIT_CONFIG.MAX_RETRIES; attempt++) {
-      try {
-        const aiPromise = model.generateContent([
-          { text: SYSTEM_PROMPT },
-          pdfDataPart
-        ]);
+    // Enhanced AI with retry only for network/timeout errors
+    async function callAIWithRetry(prompt, pdfPart, maxRetries = 2) {
+      let lastError;
+      
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          console.log(`[CV Process] AI attempt ${attempt}/${maxRetries}`);
+          
+          const aiPromise = model.generateContent([prompt, pdfPart]);
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('AI processing timeout')), CONFIG.TIMEOUT_MS)
+          );
 
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('AI processing timeout')), CONFIG.TIMEOUT_MS)
-        );
+          const aiResult = await Promise.race([aiPromise, timeoutPromise]);
+          const responseText = aiResult.response.text();
+          
+          // Parse response
+          let jsonString = responseText.trim().replace(/```json\s*|\s*```/g, '');
+          const firstBrace = jsonString.indexOf('{');
+          const lastBrace = jsonString.lastIndexOf('}');
+          
+          if (firstBrace === -1 || lastBrace === -1) {
+            throw new Error('No JSON object found in AI response');
+          }
+          
+          jsonString = jsonString.substring(firstBrace, lastBrace + 1);
+          const parsedData = JSON.parse(jsonString);
 
-        const aiResult = await Promise.race([aiPromise, timeoutPromise]);
-        const responseText = aiResult.response.text();
-        
-        let jsonString = responseText.trim();
-        jsonString = jsonString.replace(/```json\s*|\s*```/g, '');
-        
-        const firstBrace = jsonString.indexOf('{');
-        const lastBrace = jsonString.lastIndexOf('}');
-        
-        if (firstBrace === -1 || lastBrace === -1) {
-          throw new Error('No JSON object found in AI response');
+          // NO CONTENT VALIDATION - accept whatever AI returns
+          return parsedData;
+          
+        } catch (error) {
+          lastError = error;
+          console.log(`[CV Process] AI attempt ${attempt} failed:`, error.message);
+
+          // Only retry on network/timeout errors, not content issues
+          const shouldRetry = 
+            error.message.includes('timeout') ||
+            error.message.includes('network') || 
+            error.message.includes('fetch') ||
+            error.message.includes('ECONNREFUSED') ||
+            error.message.includes('ENOTFOUND');
+            
+          if (attempt < maxRetries && shouldRetry) {
+            console.log('[CV Process] Retrying due to network issue...');
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          } else {
+            break;
+          }
         }
-        
-        jsonString = jsonString.substring(firstBrace, lastBrace + 1);
-        const parsedData = JSON.parse(jsonString);
+      }
+      
+      throw lastError;
+    }
 
-        // Enhanced quality validation
-        function validateAIData(data) {
-          const summary = data.cvData?.personalInfo?.summary || '';
-          
-          const garbagePatterns = [
-            'is about at', 'is short at', 'Lantz', 'Lamis is short at',
-            'undefined', 'null', '[object Object]', 'NaN', 'test', 'example'
-          ];
-          
-          if (garbagePatterns.some(pattern => summary.includes(pattern))) {
-            throw new Error('AI quality check failed - poor summary generated');
-          }
-          
-          if (summary.length < 50 || summary.split('. ').length < 2) {
-            throw new Error('AI quality check failed - summary too short');
-          }
-          
-          // Validate required fields
-          if (!data.cvData?.personalInfo?.fullName) {
-            throw new Error('AI failed to extract basic information');
-          }
-          
-          return true;
-        }
+    // Call AI with network-only retry logic
+    const parsedData = await callAIWithRetry({ text: SYSTEM_PROMPT }, pdfDataPart);
 
         validateAIData(parsedData);
 

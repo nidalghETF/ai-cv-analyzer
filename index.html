@@ -112,6 +112,7 @@
         </p>
         <input type="file" id="cvFileInput" accept=".pdf" aria-label="CV PDF file input" />
         <button id="processBtn" disabled>Analyze CV with AI</button>
+<button id="retryBtn" style="display: none;" class="btn-secondary">Re-analyze with AI</button>
     </div>
 
     <div id="cvTemplateSection" class="template-section" style="display: none;">
@@ -652,9 +653,12 @@
             };
 
             // --- Main Processing Logic ---
+            // Store the last processed file for retry
+            let lastProcessedFile = null;
             async function handleCVProcess() {
                 const fileInput = document.getElementById('cvFileInput');
                 const file = fileInput.files[0];
+                lastProcessedFile = file; // Store for potential retry
 
                 try {
                     SecurityUtils.validateFile(file);
@@ -724,6 +728,7 @@
                     document.getElementById('uploadSection').style.display = 'none';
 
                     UI.showMessage('CV analyzed successfully! Please review and edit the templates.');
+                    toggleRetryButton(true);
                 } catch (error) {
                     console.error('Processing error:', error);
                     UI.showMessage(`Error: ${SecurityUtils.sanitizeErrorMessage(error.message)}`, true);
@@ -733,6 +738,64 @@
             }
 
             function arrayBufferToBase64(buffer) {
+            // New function for user-controlled retry
+            async function handleRetryAnalysis() {
+                if (!lastProcessedFile) {
+                    UI.showMessage('No previous CV to re-analyze. Please upload a CV first.', true);
+                    return;
+                }
+
+                try {
+                    UI.hideMessage();
+                    UI.setProcessingState(true);
+                    UI.showMessage('Re-analyzing CV with AI...');
+
+                    const arrayBuffer = await lastProcessedFile.arrayBuffer();
+                    const base64String = arrayBufferToBase64(arrayBuffer);
+
+                    const response = await fetch(CONFIG.BACKEND_API_ENDPOINT, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({ 
+                            pdfBase64: base64String,
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.message || `Backend error: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+
+                    if (!result || typeof result !== 'object') {
+                        throw new Error('Invalid response format from server');
+                    }
+
+                    // Repopulate forms with new AI results
+                    FormSerializer.populate('cvTemplateForm', result.cvData || {});
+                    FormSerializer.populate('jobTemplateForm', result.jobData || {});
+
+                    UI.showMessage('CV re-analyzed successfully! Review the updated templates.');
+
+                } catch (error) {
+                    console.error('Retry error:', error);
+                    UI.showMessage(`Error: ${SecurityUtils.sanitizeErrorMessage(error.message)}`, true);
+                } finally {
+                    UI.setProcessingState(false);
+                }
+            }
+
+            // Show/hide retry button based on state
+            function toggleRetryButton(show) {
+                const retryBtn = document.getElementById('retryBtn');
+                if (retryBtn) {
+                    retryBtn.style.display = show ? 'inline-block' : 'none';
+                }
+            }
                 const bytes = new Uint8Array(buffer);
                 let binary = '';
                 for (let i = 0; i < bytes.byteLength; i++) {
@@ -823,6 +886,7 @@
 
             // === ADD EVENT LISTENER SETUP HERE ===
             document.getElementById('processBtn')?.addEventListener('click', handleCVProcess);
+            document.getElementById('retryBtn')?.addEventListener('click', handleRetryAnalysis);
             
             // CV Template buttons
             const cvActionButtons = document.querySelector('#cvTemplateSection .action-buttons');
