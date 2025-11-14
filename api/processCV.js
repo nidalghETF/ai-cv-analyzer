@@ -455,29 +455,14 @@ export default async function handler(request, response) {
         }
       }
       
-      throw lastError;
+      throw lastError;}
     }
-
     // Call AI with network-only retry logic
     const parsedData = await callAIWithRetry({ text: SYSTEM_PROMPT }, pdfDataPart);
 
-        validateAIData(parsedData);
+    console.log('[CV Process] Success for:', parsedData.cvData?.personalInfo?.fullName || 'Unknown');
 
-        console.log('[CV Process] Success for:', parsedData.cvData?.personalInfo?.fullName || 'Unknown');
-
-        return response.status(200).json(parsedData);
-
-      } catch (retryError) {
-        lastError = retryError;
-        if (attempt < RATE_LIMIT_CONFIG.MAX_RETRIES) {
-          console.log(`[CV Process] Retry attempt ${attempt + 1} after error:`, retryError.message);
-          await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_CONFIG.RETRY_DELAY_MS));
-        }
-      }
-    }
-
-    throw lastError;
-
+    return response.status(200).json(parsedData);
   } catch (error) {
     console.error('[CV Process] Error:', error.message);
     
