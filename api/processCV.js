@@ -10,7 +10,7 @@ const RATE_LIMIT = {
 
 const CONFIG = {
   API_KEY: process.env.GOOGLE_AI_API_KEY,
-  MODEL: process.env.GEMINI_MODEL || "gemini-2.5-flash-exp",
+  MODEL: process.env.GEMINI_MODEL || "gemini-1.5-flash-exp",
   MAX_FILE_SIZE: 2 * 1024 * 1024, // 2MB
   TIMEOUT: 40000
 };
