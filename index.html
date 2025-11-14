@@ -6,98 +6,361 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI CV Analyzer</title>
     <style>
-        :root {
-            --primary: #2563eb;
-            --error: #dc2626;
-            --success: #16a34a;
-            --bg: #f9fafb;
-            --border: #d1d5db;
+    :root {
+        /* Modern Creative Color Palette */
+        --primary: #6366f1;      /* Vibrant indigo */
+        --primary-dark: #4f46e5; /* Deep indigo */
+        --secondary: #ec4899;    /* Electric pink */
+        --accent: #8b5cf6;       /* Purple */
+        --success: #10b981;      /* Emerald */
+        --warning: #f59e0b;      /* Amber */
+        --error: #ef4444;        /* Red */
+        --background: #f8fafc;   /* Light background */
+        --surface: #ffffff;      /* Card background */
+        --text-primary: #1e293b; /* Dark text */
+        --text-secondary: #64748b; /* Medium text */
+        --text-muted: #94a3b8;   /* Light text */
+        --border: #e2e8f0;       /* Border color */
+        --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        --gradient-secondary: linear-gradient(135deg, #ec4899 0%, #f59e0b 100%);
+    }
+
+    * { 
+        box-sizing: border-box; 
+        margin: 0;
+        padding: 0;
+    }
+
+    body { 
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; 
+        margin: 0;
+        padding: 20px;
+        background: var(--background);
+        color: var(--text-primary);
+        line-height: 1.6;
+        min-height: 100vh;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        text-align: center;
+        margin-bottom: 2rem;
+        letter-spacing: -0.025em;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 3px solid;
+        border-image: var(--gradient-primary) 1;
+        display: inline-block;
+    }
+
+    h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 1.5rem 0 1rem 0;
+        position: relative;
+        padding-left: 1rem;
+    }
+
+    h3::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 4px;
+        height: 20px;
+        background: var(--gradient-secondary);
+        border-radius: 2px;
+    }
+
+    /* Modern Card Design */
+    .upload-section, .template-section { 
+        margin-bottom: 2rem;
+        padding: 2rem;
+        background: var(--surface);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+        transition: all 0.3s ease;
+    }
+
+    .upload-section:hover, .template-section:hover {
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-2px);
+    }
+
+    /* Modern Form Design */
+    .form-group { 
+        margin-bottom: 1.25rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    label { 
+        display: block;
+        min-width: 180px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        flex: 0 0 180px;
+        font-size: 0.95rem;
+    }
+
+    input, textarea, select { 
+        flex: 1 1 300px;
+        padding: 0.75rem 1rem;
+        border: 2px solid var(--border);
+        border-radius: 10px;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        background: var(--surface);
+        color: var(--text-primary);
+        min-width: 250px;
+    }
+
+    input:focus, textarea:focus, select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        transform: translateY(-1px);
+    }
+
+    /* Modern Button Design */
+    button { 
+        padding: 0.75rem 1.5rem;
+        margin: 0.25rem;
+        cursor: pointer;
+        background: var(--gradient-primary);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow);
+    }
+
+    button:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    button:active {
+        transform: translateY(0);
+    }
+
+    button:disabled { 
+        background: var(--text-muted);
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .btn-danger { 
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+
+    .btn-secondary { 
+        background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+    }
+
+    /* Status Messages */
+    #statusMessage { 
+        margin: 1.5rem 0;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        display: none;
+        font-weight: 500;
+        box-shadow: var(--shadow);
+    }
+
+    .error { 
+        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        color: var(--error);
+        border-left: 4px solid var(--error);
+    }
+
+    .success { 
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        color: var(--success);
+        border-left: 4px solid var(--success);
+    }
+
+    /* Action Buttons Container */
+    .action-buttons { 
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 2px solid var(--border);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    /* Modern Dynamic Items */
+    .dynamic-item { 
+        border-left: 4px solid var(--accent);
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        position: relative;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        transition: all 0.3s ease;
+    }
+
+    .dynamic-item:hover {
+        transform: translateX(4px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .delete-btn { 
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+        background: var(--gradient-secondary);
+    }
+
+    .dynamic-container { 
+        margin-bottom: 1.5rem;
+    }
+
+    .add-btn { 
+        margin: 1rem 0;
+        background: var(--gradient-secondary);
+    }
+
+    /* File Input Styling */
+    #cvFileInput {
+        padding: 0.5rem;
+        border: 2px dashed var(--border);
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        transition: all 0.3s ease;
+    }
+
+    #cvFileInput:hover {
+        border-color: var(--primary);
+        background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+    }
+
+    /* Professional Summary Special Styling */
+    #personalInfo\\.summary {
+        background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+        border: 2px solid #bae6fd;
+        font-style: italic;
+        line-height: 1.8;
+    }
+
+    /* Job Titles Special Styling */
+    #jobIdentification\\.jobTitles {
+        background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%);
+        border: 2px solid #e9d5ff;
+        font-weight: 600;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        body {
+            padding: 1rem;
         }
-        * { box-sizing: border-box; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; 
-            margin: 20px; 
-            max-width: 1200px; 
-            margin-left: auto; 
-            margin-right: auto;
-            background: var(--bg);
+
+        .upload-section, .template-section {
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
         }
-        .upload-section, .template-section { 
-            margin-bottom: 30px; 
-            padding: 20px; 
-            border: 1px solid var(--border); 
-            border-radius: 8px; 
-            background: white;
-        }
-        .form-group { 
-            margin-bottom: 10px; 
-            display: flex;
-            flex-wrap: wrap;
-            align-items: flex-start;
-        }
+
         label { 
-            display: block;
-            min-width: 200px; 
-            font-weight: 600; 
-            margin-bottom: 5px;
-            flex: 0 0 200px;
+            flex: 0 0 100%;
+            min-width: 100%;
         }
+
         input, textarea, select { 
-            flex: 1 1 60%; 
-            padding: 8px; 
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            min-width: 250px;
+            flex: 0 0 100%;
+            min-width: 100%;
         }
-        button { 
-            padding: 10px 15px; 
-            margin: 5px; 
-            cursor: pointer; 
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 4px;
+
+        .form-group {
+            gap: 0.5rem;
         }
-        button:disabled { 
-            background: #9ca3af; 
-            cursor: not-allowed; 
+
+        h1 {
+            font-size: 2rem;
         }
-        .btn-danger { background: var(--error); }
-        .btn-secondary { background: #6b7280; }
-        #statusMessage { 
-            margin-top: 15px; 
-            padding: 12px; 
-            border-radius: 4px; 
-            display: none;
+
+        .action-buttons {
+            flex-direction: column;
         }
-        .error { background: #fee2e2; color: var(--error); border: 1px solid #fecaca; }
-        .success { background: #f0fdf4; color: var(--success); border: 1px solid #bbf7d0; }
-        .action-buttons { margin-top: 20px; }
-        h2 { border-bottom: 2px solid var(--primary); padding-bottom: 8px; }
-        h3 { color: #374151; margin-top: 20px; }
-        .dynamic-item { 
-            border-left: 3px solid var(--primary); 
-            padding: 15px;
-            margin-bottom: 15px; 
-            position: relative;
-            background: #f8fafc;
-            border-radius: 4px;
+
+        button {
+            width: 100%;
+            margin: 0.25rem 0;
         }
-        .delete-btn { 
-            position: absolute; 
-            top: 10px; 
-            right: 10px; 
-            padding: 4px 8px; 
-            font-size: 12px; 
+    }
+
+    @media (max-width: 480px) {
+        h1 {
+            font-size: 1.75rem;
         }
-        .dynamic-container { margin-bottom: 15px; }
-        .add-btn { margin: 10px 0; }
-        @media (max-width: 768px) {
-            label { flex: 0 0 100%; }
-            input, textarea, select { flex: 0 0 100%; }
-            .dynamic-item { padding: 10px; }
+
+        .upload-section, .template-section {
+            padding: 1rem;
         }
-    </style>
+
+        .dynamic-item {
+            padding: 1rem;
+        }
+    }
+
+    /* Animation for success states */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .upload-section, .template-section {
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    /* Loading state for buttons */
+    button:disabled::after {
+        content: '...';
+        animation: loading 1.5s infinite;
+    }
+
+    @keyframes loading {
+        0%, 20% { content: '.'; }
+        40% { content: '..'; }
+        60%, 100% { content: '...'; }
+    }
+</style>
 </head>
 <body>
 
