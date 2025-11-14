@@ -1,26 +1,7 @@
 {
   "name": "ai-cv-analyzer",
   "version": "1.0.0",
-  "description": "An app to analyze CVs using AI.",
-  "main": "index.html",
-  "type": "module",
-  "scripts": {
-    "dev": "vercel dev",
-    "build": "mkdir -p public && echo 'Static site - no build required'",
-    "start": "vercel dev",
-    "lint": "echo 'No linter configured'",
-    "security-check": "echo 'Run: npm audit'"
-  },
   "dependencies": {
     "@google/generative-ai": "^0.21.0"
-  },
-  "devDependencies": {
-    "@vercel/node": "^3.0.0"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "keywords": ["cv", "ai", "analysis", "career"],
-  "author": "AI CV Analyzer",
-  "license": "MIT"
+  }
 }
